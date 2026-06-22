@@ -64,23 +64,25 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
       <StatusBadge status={data.status} tone={data.statusTone} />
     </div>
     <p class="hero__teaser">{teaser}</p>
-    {
-      tags.length > 0 && (
-        <ul class="hero__tags">
-          {tags.map((tag) => (
-            <li class="tag">{tag}</li>
-          ))}
-        </ul>
-      )
-    }
-    <button
-      class="hero__action"
-      type="button"
-      data-open-modal
-      data-project-id={id}
-    >
-      View project
-    </button>
+    <div class="hero__footer">
+      <button
+        class="hero__action"
+        type="button"
+        data-open-modal
+        data-project-id={id}
+      >
+        View project
+      </button>
+      {
+        tags.length > 0 && (
+          <ul class="hero__tags">
+            {tags.map((tag) => (
+              <li class="tag">{tag}</li>
+            ))}
+          </ul>
+        )
+      }
+    </div>
   </div>
 </article>
 
@@ -96,7 +98,7 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 
   .hero__media {
     position: relative;
-    aspect-ratio: 16 / 9;
+    height: clamp(150px, 24vw, 280px);
     background: var(--bg-surface-2);
   }
   .hero__img,
@@ -133,8 +135,8 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 0.7rem;
-    padding: clamp(1rem, 2.5vw, 1.5rem);
+    gap: 0.6rem;
+    padding: clamp(0.9rem, 2.5vw, 1.4rem);
   }
   .hero__heading {
     display: flex;
@@ -151,21 +153,30 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     max-width: 70ch;
     color: var(--text-secondary);
   }
-  .hero__tags {
+
+  /* Button and tags share one row so the button doesn't add a stacked line. */
+  .hero__footer {
     display: flex;
+    align-items: center;
     flex-wrap: wrap;
-    gap: 0.35rem;
-    list-style: none;
-    padding: 0;
+    gap: 0.5rem 0.8rem;
   }
   .hero__action {
-    margin-top: 0.2rem;
-    padding: 0.55rem 1.2rem;
+    flex: none;
+    padding: 0.5rem 1.15rem;
     font-weight: 600;
     border: 0;
     border-radius: var(--radius);
     background: var(--action-bg);
     color: var(--action-text);
     cursor: pointer;
+  }
+  .hero__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
   }
 </style>

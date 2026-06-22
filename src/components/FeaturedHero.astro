@@ -56,6 +56,7 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
       )
     }
     <span class="hero__label">Featured</span>
+    <div class="hero__cue" aria-hidden="true"><span>View project →</span></div>
   </div>
 
   <div class="hero__body">
@@ -164,6 +165,28 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     margin: 0;
   }
 
+  /* Hover cue: a clear "click to open" affordance over the media. */
+  .hero__cue {
+    position: absolute;
+    inset: auto 0 0 0;
+    z-index: 2;
+    display: flex;
+    justify-content: flex-end;
+    padding: 0.7rem 0.75rem;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.55));
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    pointer-events: none;
+  }
+  .hero__cue span {
+    padding: 0.35rem 0.85rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: var(--radius);
+    background: var(--action-bg);
+    color: var(--action-text);
+  }
+
   .hero__open {
     position: absolute;
     inset: 0;
@@ -175,5 +198,30 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
   .hero__open:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: -2px;
+  }
+
+  /* Highlight on hover (and keyboard focus), mirroring the grid cards. */
+  @media (hover: hover) {
+    .hero:hover .hero__cue {
+      opacity: 1;
+    }
+  }
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .hero {
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+    .hero:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 0 1px var(--hover-ring),
+        var(--ring-glow) var(--hover-ring);
+    }
+  }
+  .hero:focus-within {
+    box-shadow:
+      0 0 0 1px var(--hover-ring),
+      var(--ring-glow) var(--hover-ring);
   }
 </style>

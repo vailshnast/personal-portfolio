@@ -220,28 +220,38 @@ ffmpeg -ss 00:00:02 -i full.mp4 -frames:v 1 -vf "scale=1280:-2" poster.jpg
 
 ## Deploying to GitHub Pages
 
+### This repo's configuration
+
+`astro.config.mjs` is already set up as a **project site**:
+
+```js
+site: 'https://vailshnast.github.io',
+base: '/personal-portfolio',
+```
+
+→ live URL: **`https://vailshnast.github.io/personal-portfolio/`**
+
+If you fork/rename this, pick your URL type and update `astro.config.mjs` accordingly:
+
+- **User/org site** — repo named exactly `USERNAME.github.io` → `site: 'https://USERNAME.github.io'`,
+  `base: '/'`.
+- **Project site** — any repo name → `site: 'https://USERNAME.github.io'`,
+  `base: '/REPO_NAME'`.
+
 ### First-time setup
 
-1. Create a GitHub repo and push this project (see below). Decide the URL type:
-   - **User/org site** — repo named exactly `USERNAME.github.io` → site at
-     `https://USERNAME.github.io/`. In `astro.config.mjs`: set `site`, use `base: '/'`.
-   - **Project site** — any repo name (e.g. `portfolio`) → site at
-     `https://USERNAME.github.io/portfolio/`. In `astro.config.mjs`: set `site` **and**
-     `base: '/portfolio'`.
-2. In `astro.config.mjs`, set `site` (and `base` if a project site) accordingly.
-3. On GitHub: **Settings → Pages → Build and deployment → Source = GitHub Actions.**
-4. Push to `main`. The included workflow (`.github/workflows/deploy.yml`) builds and
-   publishes automatically. The Actions tab shows progress; the live URL appears in the
+1. On GitHub: **Settings → Pages → Build and deployment → Source = GitHub Actions.**
+2. Push to `main`. The included workflow (`.github/workflows/deploy.yml`) builds and
+   publishes automatically (`actions/checkout@v6` → `withastro/action@v6` →
+   `actions/deploy-pages@v5`). The Actions tab shows progress; the live URL appears in the
    workflow's "deploy" step.
 
 ### Push the project the first time
 
+The repo is already initialised on the `main` branch. Link the remote and push:
+
 ```bash
-git init
-git add .
-git commit -m "Initial portfolio"
-git branch -M main
-git remote add origin https://github.com/USERNAME/REPO.git
+git remote add origin https://github.com/vailshnast/personal-portfolio.git
 git push -u origin main
 ```
 

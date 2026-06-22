@@ -81,13 +81,11 @@
     function show(card: HTMLElement) {
       fill(card);
       tip!.classList.add("is-visible");
-      tip!.setAttribute("aria-hidden", "false");
       position(card); // measure after it has layout
     }
 
     function hide() {
       tip!.classList.remove("is-visible");
-      tip!.setAttribute("aria-hidden", "true");
     }
 
     document

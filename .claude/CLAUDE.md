@@ -52,18 +52,21 @@ npx prettier . --write   # format (uses prettier-plugin-astro)
 ## Repo map
 
 ```
-src/config/site.ts        # OWNER config: name, role, links, themeFamily, defaultMode, categories
+src/config/site.ts        # OWNER config: name, role, links, themeFamily, defaultMode,
+                           # categories, metaTitle/Description, themeColor, metaImage (OG)
 src/content.config.ts     # Content Collection + Zod schema (validates project frontmatter)
 src/content/projects/*.md # one file per project; body = long description (modal)
 src/styles/themes.css     # all four palettes as CSS variables (semantic tokens)
 src/lib/                   # projects.ts (load/sort/filter), theme.ts (no-flash + toggle)
 src/components/            # Header, ThemeToggle, FilterTabs, FeaturedHero, ProjectCard,
                            # ProjectGrid, ProjectModal, StatusBadge
-src/layouts/BaseLayout.astro
-src/pages/index.astro      # the only page
+src/layouts/BaseLayout.astro  # <head>: SEO/OG/Twitter meta, theme-color, sitemap + favicon links
+src/pages/index.astro      # the main page
+src/pages/404.astro        # themed not-found page (GitHub Pages serves 404.html)
 public/media/<id>/         # per-project videos (preview.*, full.*) + posters per spec
+public/robots.txt          # points crawlers at the sitemap
 .github/workflows/deploy.yml
-astro.config.mjs           # site + base (GitHub Pages)
+astro.config.mjs           # site + base (GitHub Pages) + @astrojs/sitemap integration
 ```
 
 ## Hard rules

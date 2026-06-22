@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://vailshnast.github.io/personal-portfolio/sitemap-index.xml

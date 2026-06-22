@@ -12,8 +12,16 @@ interface Props {
 const { title = site.metaTitle, description = site.metaDescription } =
   Astro.props;
 
-// Base-aware so it resolves under a GitHub Pages project subpath.
-const base = import.meta.env.BASE_URL;
+// Base-aware joiner: BASE_URL may or may not carry a trailing slash, so
+// normalize both sides to avoid `/personal-portfoliofavicon.svg`-style breaks.
+const withBase = (p: string) =>
+  `${import.meta.env.BASE_URL.replace(/\/$/, "")}/${p.replace(/^\//, "")}`;
+
+// Absolute URLs for SEO / social tags. Astro.site comes from astro.config.mjs.
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const ogImageURL = site.metaImage
+  ? new URL(withBase(site.metaImage), Astro.site)
+  : undefined;
 ---
 
 <!doctype html>
@@ -47,7 +55,27 @@ const base = import.meta.env.BASE_URL;
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <link rel="canonical" href={canonicalURL} />
+    <meta name="theme-color" content={site.themeColor} />
+    <link rel="icon" type="image/svg+xml" href={withBase("favicon.svg")} />
+    <link rel="sitemap" href={withBase("sitemap-index.xml")} />
+
+    {/* Open Graph — rich previews when the link is shared. */}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalURL} />
+    {ogImageURL && <meta property="og:image" content={ogImageURL} />}
+
+    {/* Twitter card. */}
+    <meta
+      name="twitter:card"
+      content={ogImageURL ? "summary_large_image" : "summary"}
+    />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    {ogImageURL && <meta name="twitter:image" content={ogImageURL} />}
   </head>
   <body>
     <a class="skip-link" href="#main">Skip to content</a>

@@ -28,6 +28,12 @@ svg {
   max-width: 100%;
 }
 
+/* The `hidden` attribute must win even over `display: grid/flex` elements so
+   JS-driven filtering (which toggles `el.hidden`) reliably hides them. */
+[hidden] {
+  display: none !important;
+}
+
 input,
 button,
 textarea,

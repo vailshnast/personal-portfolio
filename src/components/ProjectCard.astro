@@ -1,0 +1,123 @@
+---
+import { Image } from "astro:assets";
+import StatusBadge from "./StatusBadge.astro";
+import type { Project } from "../lib/projects";
+
+interface Props {
+  project: Project;
+  hidden?: boolean;
+}
+
+const { project, hidden = false } = Astro.props;
+const { data, id } = project;
+const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
+---
+
+<article
+  class="card"
+  data-project-card
+  data-project-id={id}
+  data-category={data.category}
+  hidden={hidden}
+>
+  <div class="card__media">
+    <Image
+      class="card__img"
+      src={data.thumb}
+      alt={`${data.title} cover art`}
+      widths={[178, 356, 534]}
+      sizes="(max-width: 600px) 45vw, 220px"
+      loading="lazy"
+    />
+    {
+      data.status && (
+        <div class="card__badge">
+          <StatusBadge status={data.status} tone={data.statusTone} />
+        </div>
+      )
+    }
+  </div>
+  <div class="card__body">
+    <h3 class="card__title">{data.title}</h3>
+    <p class="card__blurb">{data.blurb}</p>
+    {
+      tags.length > 0 && (
+        <ul class="card__tags">
+          {tags.map((tag) => (
+            <li class="tag">{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .card__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-surface-2);
+  }
+  .card__img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .card__badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+  }
+
+  .card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 0.6rem 0.7rem 0.75rem;
+  }
+  .card__title {
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+  .card__blurb {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+  }
+  .card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    margin-top: 0.1rem;
+    list-style: none;
+    padding: 0;
+  }
+
+  /* Hover affordance only where a real pointer exists and motion is welcome.
+     The in-card video preview (step 6) and click-to-open modal (step 7) build
+     on this element. */
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    .card {
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+    .card:hover {
+      transform: scale(1.04);
+      box-shadow:
+        0 0 0 1px var(--hover-ring),
+        var(--ring-glow) var(--hover-ring);
+      z-index: 2;
+    }
+  }
+</style>

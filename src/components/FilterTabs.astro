@@ -1,0 +1,122 @@
+---
+import { site } from "../config/site";
+import { ALL_CATEGORY } from "../lib/projects";
+
+const categories = [ALL_CATEGORY, ...site.categories];
+---
+
+<div class="tabs" role="tablist" aria-label="Filter projects by category">
+  {
+    categories.map((category, i) => (
+      <button
+        class="tab"
+        type="button"
+        role="tab"
+        data-filter-tab
+        data-category={category}
+        aria-selected={i === 0 ? "true" : "false"}
+        tabindex={i === 0 ? 0 : -1}
+      >
+        {category}
+      </button>
+    ))
+  }
+</div>
+
+<script>
+  // Client-side category filter with hero recompute. Every project is rendered
+  // once as a [data-project-hero] (all but the active one hidden) and once as a
+  // [data-project-card] (the featured one hidden). Selecting a category shows the
+  // first matching project as the hero and the rest as cards. The server already
+  // renders the correct "All" state, so projects are visible without this script.
+  const tabs = Array.from(
+    document.querySelectorAll<HTMLButtonElement>("[data-filter-tab]"),
+  );
+  const heroes = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-project-hero]"),
+  );
+  const cards = Array.from(
+    document.querySelectorAll<HTMLElement>("[data-project-card]"),
+  );
+  const emptyState = document.querySelector<HTMLElement>(
+    "[data-projects-empty]",
+  );
+
+  const matches = (el: HTMLElement, category: string) =>
+    category === "All" || el.dataset.category === category;
+
+  function apply(category: string) {
+    // Heroes and cards are rendered in canonical sort order, so the first
+    // matching hero is the correct featured project for this category.
+    const featured =
+      category === "All" ? heroes[0] : heroes.find((h) => matches(h, category));
+    const featuredId = featured?.dataset.projectId ?? null;
+
+    heroes.forEach((hero) => {
+      hero.hidden = hero.dataset.projectId !== featuredId;
+    });
+
+    let visibleCards = 0;
+    cards.forEach((card) => {
+      const show =
+        matches(card, category) && card.dataset.projectId !== featuredId;
+      card.hidden = !show;
+      if (show) visibleCards += 1;
+    });
+
+    if (emptyState) emptyState.hidden = featuredId !== null || visibleCards > 0;
+  }
+
+  function select(tab: HTMLButtonElement) {
+    tabs.forEach((t) => {
+      const selected = t === tab;
+      t.setAttribute("aria-selected", String(selected));
+      t.tabIndex = selected ? 0 : -1;
+    });
+    apply(tab.dataset.category ?? "All");
+  }
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => select(tab));
+    tab.addEventListener("keydown", (event) => {
+      const i = tabs.indexOf(tab);
+      let next = -1;
+      if (event.key === "ArrowRight") next = (i + 1) % tabs.length;
+      else if (event.key === "ArrowLeft")
+        next = (i - 1 + tabs.length) % tabs.length;
+      else if (event.key === "Home") next = 0;
+      else if (event.key === "End") next = tabs.length - 1;
+      if (next < 0) return;
+      event.preventDefault();
+      tabs[next].focus();
+      select(tabs[next]);
+    });
+  });
+</script>
+
+<style>
+  .tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.25rem;
+  }
+
+  .tab {
+    position: relative;
+    padding: 0.5rem 0.85rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+  }
+  .tab:hover {
+    color: var(--text-primary);
+  }
+  .tab[aria-selected="true"] {
+    color: var(--text-primary);
+    border-bottom-color: var(--accent);
+  }
+</style>

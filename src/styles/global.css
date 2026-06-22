@@ -28,3 +28,14 @@ body {
   outline-offset: 2px;
   border-radius: var(--radius);
 }
+
+/* Shared tech-pill utility used by cards, the hero, and (later) the modal. */
+.tag {
+  display: inline-block;
+  font-size: 0.72rem;
+  line-height: 1.4;
+  padding: 0.1rem 0.5rem;
+  border-radius: var(--radius);
+  background: var(--accent-soft);
+  color: var(--accent-soft-text);
+}

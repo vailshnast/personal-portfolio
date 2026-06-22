@@ -1,0 +1,113 @@
+:root {
+  --radius: 4px;
+  --radius-lg: 8px;
+  --ring-glow: 0 0 16px;
+}
+
+/* ---------- ORIGINAL · DARK ---------- */
+[data-theme="original"][data-mode="dark"] {
+  --bg-page: #0e141b;
+  --bg-surface: #16202d;
+  --bg-surface-2: #1b2838;
+  --bg-elevated: #16202d;
+  --text-primary: #ffffff;
+  --text-secondary: #c7d5e0;
+  --text-muted: #8f98a0;
+  --accent: #66c0f4;
+  --accent-contrast: #0e141b;
+  --accent-soft: rgba(102, 192, 244, 0.14);
+  --accent-soft-text: #9bcbef;
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --badge-green-bg: #4c6b22;
+  --badge-green-text: #beee11;
+  --badge-blue-bg: #1a3a52;
+  --badge-blue-text: #67c1f5;
+  --badge-neutral-bg: rgba(0, 0, 0, 0.45);
+  --badge-neutral-text: #ffffff;
+  --hover-ring: #66c0f4;
+  --action-bg: #66c0f4;
+  --action-text: #0e141b;
+  --scrim: linear-gradient(transparent, rgba(11, 17, 23, 0.93));
+}
+
+/* ---------- ORIGINAL · LIGHT ---------- */
+[data-theme="original"][data-mode="light"] {
+  --bg-page: #f5f7fa;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #e9eef3;
+  --bg-elevated: #ffffff;
+  --text-primary: #1b2838;
+  --text-secondary: #3a4754;
+  --text-muted: #5a6772;
+  --accent: #1a6dc4;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(26, 109, 196, 0.12);
+  --accent-soft-text: #1a6dc4;
+  --border: rgba(0, 0, 0, 0.08);
+  --border-strong: rgba(0, 0, 0, 0.18);
+  --badge-green-bg: #dff0c2;
+  --badge-green-text: #3b6d11;
+  --badge-blue-bg: #dcecfb;
+  --badge-blue-text: #1a6dc4;
+  --badge-neutral-bg: rgba(0, 0, 0, 0.06);
+  --badge-neutral-text: #1b2838;
+  --hover-ring: #1a6dc4;
+  --action-bg: #1a6dc4;
+  --action-text: #ffffff;
+  --scrim: linear-gradient(transparent, rgba(245, 247, 250, 0.95));
+}
+
+/* ---------- STEAM · DARK ---------- */
+[data-theme="steam"][data-mode="dark"] {
+  --bg-page: #1b2838;
+  --bg-surface: #16202d;
+  --bg-surface-2: #2a475e;
+  --bg-elevated: #1b2838;
+  --text-primary: #ffffff;
+  --text-secondary: #c7d5e0;
+  --text-muted: #8f98a0;
+  --accent: #67c1f5;
+  --accent-contrast: #0e141b;
+  --accent-soft: rgba(103, 193, 245, 0.2);
+  --accent-soft-text: #67c1f5;
+  --border: rgba(0, 0, 0, 0.3);
+  --border-strong: rgba(103, 193, 245, 0.45);
+  --badge-green-bg: #4c6b22;
+  --badge-green-text: #beee11;
+  --badge-blue-bg: #1a3a52;
+  --badge-blue-text: #67c1f5;
+  --badge-neutral-bg: rgba(0, 0, 0, 0.45);
+  --badge-neutral-text: #ffffff;
+  --hover-ring: #67c1f5;
+  --action-bg: linear-gradient(90deg, #47bfff 0%, #1a44c2 100%);
+  --action-text: #ffffff;
+  --scrim: linear-gradient(transparent, rgba(11, 17, 23, 0.93));
+}
+
+/* ---------- STEAM · LIGHT ---------- */
+[data-theme="steam"][data-mode="light"] {
+  --bg-page: #eceff3;
+  --bg-surface: #ffffff;
+  --bg-surface-2: #dfe6ee;
+  --bg-elevated: #ffffff;
+  --text-primary: #1b2838;
+  --text-secondary: #3a4754;
+  --text-muted: #5e6b78;
+  --accent: #1b6fb3;
+  --accent-contrast: #ffffff;
+  --accent-soft: rgba(27, 111, 179, 0.12);
+  --accent-soft-text: #1b6fb3;
+  --border: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(27, 111, 179, 0.4);
+  --badge-green-bg: #dff0c2;
+  --badge-green-text: #3b6d11;
+  --badge-blue-bg: #dbe9f7;
+  --badge-blue-text: #1b6fb3;
+  --badge-neutral-bg: rgba(0, 0, 0, 0.06);
+  --badge-neutral-text: #1b2838;
+  --hover-ring: #1b6fb3;
+  --action-bg: linear-gradient(90deg, #2a8fe0 0%, #1a44c2 100%);
+  --action-text: #ffffff;
+  --scrim: linear-gradient(transparent, rgba(236, 239, 243, 0.95));
+}

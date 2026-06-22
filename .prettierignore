@@ -1,0 +1,13 @@
+# Build output & deps
+dist/
+node_modules/
+package-lock.json
+
+# Hand-maintained docs (source of truth — don't reformat)
+README.md
+project-specification.md
+AGENTS.md
+.claude/
+
+# Deferred until the deploy step
+astro.config.mjs

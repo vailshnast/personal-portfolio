@@ -1,0 +1,52 @@
+---
+import { site } from "../config/site";
+import "../styles/reset.css";
+import "../styles/themes.css";
+import "../styles/global.css";
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+
+const { title = site.metaTitle, description = site.metaDescription } =
+  Astro.props;
+---
+
+<!doctype html>
+<html lang="en" data-theme={site.themeFamily} data-mode={site.defaultMode}>
+  <head>
+    <meta charset="utf-8" />
+    {
+      /* No-flash: set data-mode from localStorage / OS preference BEFORE first paint.
+        Must stay inline and ahead of any styling — do not move into a bundled script. */
+    }
+    <script is:inline>
+      (() => {
+        const KEY = "pf-mode";
+        const root = document.documentElement;
+        const fallback = root.getAttribute("data-mode") || "dark";
+        let mode;
+        try {
+          mode = localStorage.getItem(KEY);
+        } catch {
+          mode = null;
+        }
+        if (!mode) {
+          mode = matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+        }
+        root.setAttribute("data-mode", mode || fallback);
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

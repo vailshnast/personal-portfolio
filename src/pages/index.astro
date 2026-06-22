@@ -1,17 +1,262 @@
 ---
+// TEMPORARY palette-preview harness (step 2). This is NOT the final page — it
+// exists so all four palettes can be eyeballed at once before content is added.
+// The real header/hero/grid replace this in later steps.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+import { site } from "../config/site";
 
+const palettes = [
+  { theme: "steam", mode: "dark", label: "Steam · Dark" },
+  { theme: "steam", mode: "light", label: "Steam · Light" },
+  { theme: "original", mode: "dark", label: "Original · Dark" },
+  { theme: "original", mode: "light", label: "Original · Light" },
+] as const;
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<BaseLayout title="Theme preview — palettes">
+  <header class="bar">
+    <div>
+      <strong>{site.name}</strong>
+      <span class="bar__role">{site.role}</span>
+    </div>
+    <div class="bar__right">
+      <span class="bar__hint">runtime toggle (live &lt;html&gt;) →</span>
+      <ThemeToggle />
+    </div>
+  </header>
+
+  <main class="wrap">
+    <p class="intro">
+      Theme family is set in <code>site.ts</code> (currently <code
+        >{site.themeFamily}</code
+      >) and drives the live page. The four panels below force each <code
+        >data-theme</code
+      > ×
+      <code>data-mode</code> combination so all palettes are visible at once.
+    </p>
+
+    <div class="palettes">
+      {
+        palettes.map((p) => (
+          <section class="panel" data-theme={p.theme} data-mode={p.mode}>
+            <h2 class="panel__title">{p.label}</h2>
+
+            <div class="card">
+              <div class="card__head">
+                <span class="title">Sample project</span>
+                <span class="badge badge--green">Shipped</span>
+              </div>
+              <p class="muted">A capsule blurb in secondary text.</p>
+              <div class="tags">
+                <span class="tag">Unity</span>
+                <span class="tag">C#</span>
+                <span class="tag">.NET</span>
+              </div>
+              <button class="action">Primary action</button>
+            </div>
+
+            <div class="badges">
+              <span class="badge badge--green">green</span>
+              <span class="badge badge--blue">blue</span>
+              <span class="badge badge--neutral">neutral</span>
+            </div>
+
+            <div class="text-tiers">
+              <span class="t-primary">primary</span>
+              <span class="t-secondary">secondary</span>
+              <span class="t-muted">muted</span>
+              <a class="t-accent" href="#">
+                accent link
+              </a>
+            </div>
+
+            <div class="swatches">
+              <span class="sw" style="background:var(--bg-page)">
+                page
+              </span>
+              <span class="sw" style="background:var(--bg-surface)">
+                surface
+              </span>
+              <span class="sw" style="background:var(--bg-surface-2)">
+                surface-2
+              </span>
+              <span class="sw sw--ring">hover-ring</span>
+            </div>
+          </section>
+        ))
+      }
+    </div>
+  </main>
+</BaseLayout>
+
+<style>
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.75rem 1.25rem;
+    background: var(--bg-surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .bar__role {
+    margin-left: 0.6rem;
+    color: var(--text-muted);
+  }
+  .bar__right {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .bar__hint {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+
+  .wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+  }
+  .intro {
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+  }
+  code {
+    background: var(--accent-soft);
+    color: var(--accent-soft-text);
+    padding: 0.05em 0.35em;
+    border-radius: var(--radius);
+  }
+
+  .palettes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Each panel is its own themed surface, driven entirely by semantic tokens. */
+  .panel {
+    background: var(--bg-page);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    padding: 1rem;
+  }
+  .panel__title {
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem;
+    box-shadow:
+      0 0 0 1px var(--hover-ring),
+      var(--ring-glow) var(--hover-ring);
+  }
+  .card__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+  .title {
+    font-weight: 600;
+  }
+  .muted {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    margin: 0.35rem 0 0.6rem;
+  }
+
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-bottom: 0.75rem;
+  }
+  .tag {
+    font-size: 0.72rem;
+    padding: 0.12rem 0.45rem;
+    border-radius: var(--radius);
+    background: var(--accent-soft);
+    color: var(--accent-soft-text);
+  }
+
+  .action {
+    background: var(--action-bg);
+    color: var(--action-text);
+    font-weight: 600;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--radius);
+  }
+
+  .badges {
+    display: flex;
+    gap: 0.4rem;
+    margin: 0.85rem 0;
+  }
+  .badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 0.12rem 0.5rem;
+    border-radius: var(--radius);
+  }
+  .badge--green {
+    background: var(--badge-green-bg);
+    color: var(--badge-green-text);
+  }
+  .badge--blue {
+    background: var(--badge-blue-bg);
+    color: var(--badge-blue-text);
+  }
+  .badge--neutral {
+    background: var(--badge-neutral-bg);
+    color: var(--badge-neutral-text);
+  }
+
+  .text-tiers {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.85rem;
+    margin-bottom: 0.85rem;
+  }
+  .t-primary {
+    color: var(--text-primary);
+  }
+  .t-secondary {
+    color: var(--text-secondary);
+  }
+  .t-muted {
+    color: var(--text-muted);
+  }
+  .t-accent {
+    color: var(--accent);
+  }
+
+  .swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+  .sw {
+    flex: 1 1 auto;
+    text-align: center;
+    font-size: 0.68rem;
+    padding: 0.5rem 0.3rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text-secondary);
+  }
+  .sw--ring {
+    background: transparent;
+    border-color: var(--hover-ring);
+    box-shadow: var(--ring-glow) var(--hover-ring);
+  }
+</style>

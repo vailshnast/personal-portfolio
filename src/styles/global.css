@@ -29,7 +29,7 @@ body {
   border-radius: var(--radius);
 }
 
-/* Shared tech-pill utility used by cards, the hero, the tooltip, and the modal. */
+/* Shared tech-pill utility used by cards, the hero, and the modal. */
 .tag {
   display: inline-block;
   font-size: 0.72rem;
@@ -40,8 +40,7 @@ body {
   color: var(--accent-soft-text);
 }
 
-/* Shared status badge (StatusBadge, HoverTooltip, ProjectModal all emit these
-   classes). Lives here so runtime-built badges in the tooltip get styled too. */
+/* Shared status badge (StatusBadge, ProjectModal emit these classes). */
 .badge {
   display: inline-block;
   font-size: 0.72rem;

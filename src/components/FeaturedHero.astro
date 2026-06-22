@@ -55,7 +55,6 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
         </video>
       )
     }
-    <span class="hero__label">Featured</span>
     <div class="hero__cue" aria-hidden="true"><span>View project →</span></div>
   </div>
 
@@ -118,21 +117,6 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
   .hero.is-previewing .hero__video {
     opacity: 1;
   }
-  .hero__label {
-    position: absolute;
-    top: 0.75rem;
-    left: 0.75rem;
-    z-index: 1;
-    padding: 0.2rem 0.55rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--accent-contrast);
-    background: var(--accent);
-    border-radius: var(--radius);
-  }
-
   .hero__body {
     display: flex;
     flex-direction: column;

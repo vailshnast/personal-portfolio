@@ -7,7 +7,7 @@ session. For full build detail see **`project-specification.md`**; for human usa
 ## What this is
 
 A static, Steam-store-inspired developer portfolio. Projects-first: featured hero +
-capsule grid + category filter tabs; hover shows a tooltip teaser + in-card video preview;
+capsule grid + category filter tabs; hover shows an in-card video preview;
 click opens an in-page modal with the full video, description, and repo links. Two-axis
 theming (owner picks a color **family**; visitor toggles **dark/light**). Deployed to
 GitHub Pages.
@@ -58,7 +58,7 @@ src/content/projects/*.md # one file per project; body = long description (modal
 src/styles/themes.css     # all four palettes as CSS variables (semantic tokens)
 src/lib/                   # projects.ts (load/sort/filter), theme.ts (no-flash + toggle)
 src/components/            # Header, ThemeToggle, FilterTabs, FeaturedHero, ProjectCard,
-                           # ProjectGrid, HoverTooltip, ProjectModal, StatusBadge
+                           # ProjectGrid, ProjectModal, StatusBadge
 src/layouts/BaseLayout.astro
 src/pages/index.astro      # the only page
 public/media/<id>/         # per-project videos (preview.*, full.*) + posters per spec
@@ -86,8 +86,8 @@ astro.config.mjs           # site + base (GitHub Pages)
 
 **Behavior**
 - **Projects-first, no endless scroll.** Default ("All") view must show projects **with
-  JavaScript disabled.** JS only enhances (filter, hero recompute, tooltip, modal, toggle).
-- **Hover depends on a pointer.** Gate hover tooltip + in-card video preview behind
+  JavaScript disabled.** JS only enhances (filter, hero recompute, hover preview, modal, toggle).
+- **Hover depends on a pointer.** Gate the in-card video preview behind
   `(hover: hover)` / `(pointer: fine)`. On touch, a tap opens the modal directly.
 - **Modal**: focus trap, `Esc`/backdrop/✕ to close, return focus to the trigger, lock body
   scroll, pause/reset video on close. (Standard fixed/overlay modal is fine here — this is

@@ -5,7 +5,7 @@ projects: visitors see everything at a glance, preview videos on hover, and open
 detail modal on click. Built with Astro, hosted free on GitHub Pages.
 
 - **Featured hero** + **capsule grid** of projects, with **category filter tabs**.
-- **Hover** → Steam-style tooltip teaser + in-card video preview.
+- **Hover** → in-card video preview.
 - **Click** → in-page modal with the full video, description, and repo links.
 - **Theming**: you pick a color **family** (Steam or Original); visitors toggle **dark / light**.
 
@@ -17,7 +17,7 @@ detail modal on click. Built with Astro, hosted free on GitHub Pages.
 ## How it works
 
 - **Static site.** Astro builds plain HTML/CSS with a tiny bit of vanilla JS (filtering,
-  hover tooltip, modal, theme toggle). No backend, no database.
+  hover preview, modal, theme toggle). No backend, no database.
 - **One Markdown file per project.** Each lives in `src/content/projects/`. Its frontmatter
   defines the card; its body is the long description shown in the modal. Add a file → a new
   card appears. Delete it → it's gone.
@@ -103,7 +103,7 @@ project in the current filter becomes the **featured hero**; the rest fill the g
 ---
 title: "Trawler's Wake"           # required — card + modal title
 blurb: "PC horror fishing game"   # required — one line on the card
-summary: "Longer teaser…"         # optional — shown in the hover tooltip (falls back to blurb)
+summary: "Longer teaser…"         # optional — featured hero teaser (falls back to blurb)
 category: "Game dev"              # required — MUST match a category in site.ts
 tags: ["Unity", "URP", "C#"]      # required — tech pills
 status: "Shipped"                 # optional — badge text

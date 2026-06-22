@@ -23,7 +23,7 @@ const projects = defineCollection({
     z.object({
       title: z.string(),
       blurb: z.string(),
-      // Richer hover-tooltip teaser; the UI falls back to `blurb` when absent.
+      // Richer featured-hero teaser; the UI falls back to `blurb` when absent.
       summary: z.string().optional(),
       category: z.enum(categories),
       tags: z.array(z.string()).min(1),

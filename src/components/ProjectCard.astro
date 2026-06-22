@@ -23,11 +23,6 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
   data-project-card
   data-project-id={id}
   data-category={data.category}
-  data-title={data.title}
-  data-status={data.status ?? ""}
-  data-tone={data.statusTone}
-  data-summary={data.summary ?? data.blurb}
-  data-tags={data.tags.join("|")}
   hidden={hidden}
 >
   <div class="card__media">

@@ -32,7 +32,7 @@ preview videos on hover, and open a full detail **modal** on click.
 
 - **Featured hero** at the top + a **capsule grid** of the remaining projects.
 - **Category filter tabs** (All / Game dev / Backend / Tooling …).
-- **Hover** → lightweight Steam-style **tooltip teaser** + in-card video preview.
+- **Hover** → in-card video preview.
 - **Click** → in-page **modal overlay** with the full video, description, and repo links.
 - **Two-axis theming**: the repo owner picks a color **family** (steam | original) in
   config; the visitor toggles **dark / light** mode. Four palettes total.
@@ -118,7 +118,6 @@ preview videos on hover, and open a full detail **modal** on click.
 │   │   ├── FeaturedHero.astro
 │   │   ├── ProjectCard.astro
 │   │   ├── ProjectGrid.astro
-│   │   ├── HoverTooltip.astro
 │   │   ├── ProjectModal.astro
 │   │   └── StatusBadge.astro
 │   ├── layouts/
@@ -188,7 +187,7 @@ Zod schema. **Confirm the exact current API via the Astro Docs MCP** before writ
 |---|---|---|---|
 | `title` | string | ✅ | Card + modal title |
 | `blurb` | string | ✅ | One line under the title on the card (≤ ~60 chars) |
-| `summary` | string | ➖ | Richer teaser shown in the hover tooltip. Falls back to `blurb`. |
+| `summary` | string | ➖ | Richer teaser shown on the featured hero. Falls back to `blurb`. |
 | `category` | enum(site.categories) | ✅ | Drives filtering. Must match a configured category. |
 | `tags` | string[] | ✅ | Tech pills (cap display at ~4 on card, all in modal) |
 | `status` | string | ➖ | Badge text, e.g. "Shipped", "Live demo", "Production" |
@@ -406,17 +405,6 @@ Responsive grid: `repeat(auto-fit, minmax(178px, 1fr))`, gap ~14px. Card = poste
 (`--radius`). On hover: scale ~1.04, `box-shadow: 0 0 0 1px var(--hover-ring), var(--ring-glow) color`,
 swap poster → playing `<video>` preview, raise `z-index`. Click → modal.
 
-### HoverTooltip.astro  (the Steam "B" teaser)
-On **desktop hover** of a card (after ~180ms), show a floating panel near the cursor/card
-containing: title, status badge, `summary` (fallback `blurb`), full tag list, and a
-"View project →" hint. Behavior:
-- Positioned absolutely relative to a positioned container (NOT `position: fixed`).
-- **Edge collision**: if it would overflow the right edge, flip to the card's left; if it
-  would overflow the bottom, anchor upward. Clamp within the viewport.
-- Hide on `mouseleave` (with a small grace delay to avoid flicker).
-- **Touch / no-hover devices**: do not show the tooltip at all; a tap opens the modal
-  directly. Detect via `(hover: none)` / `pointer: coarse` media query.
-- Honor `prefers-reduced-motion` (no slide/scale, just show/hide).
 
 ### ProjectModal.astro  (in-page overlay — NOT a route)
 One modal instance reused for all projects, populated on open from the clicked card's
@@ -469,7 +457,7 @@ Maps `statusTone` → badge tokens (`green` / `blue` / `neutral`). Renders `stat
 
 - Initial load ships posters only; videos are `preload="none"` and load on demand.
 - Optimize images via `astro:assets`. Lazy-load offscreen posters (`loading="lazy"`).
-- Near-zero JS: only filter, hover tooltip, modal, and theme toggle. No framework runtime.
+- Near-zero JS: only filter, hover preview, modal, and theme toggle. No framework runtime.
 - Lighthouse: Performance ≥ 95, Accessibility ≥ 95 on a mid-tier device.
 
 ---
@@ -533,7 +521,7 @@ jobs:
 - [ ] Visitor dark/light toggle works, persists across reloads, and has **no flash** of the
       wrong mode on load.
 - [ ] All four palettes pass AA contrast.
-- [ ] Hover shows the tooltip teaser + plays the in-card preview (desktop only).
+- [ ] Hover plays the in-card preview (desktop only).
 - [ ] Click opens the modal with the full video + description + working repo links;
       Esc/backdrop/✕ close it; focus is managed.
 - [ ] Touch devices: no hover dependency; tap opens the modal.
@@ -550,7 +538,7 @@ jobs:
 3. Content Collection schema + 2–3 sample projects (with placeholder media).
 4. `ProjectCard` + `ProjectGrid` (static, no JS) → projects visible.
 5. `FeaturedHero` + filtering logic + `FilterTabs`.
-6. Hover preview video + `HoverTooltip` (with edge-collision + touch fallback).
+6. Hover preview video (desktop only; touch falls back to tap-opens-modal).
 7. `ProjectModal` (focus trap, scroll lock, video control).
 8. Accessibility + reduced-motion pass; Lighthouse.
 9. `astro.config.mjs` (`site`/`base`) + deploy workflow; ship to Pages.

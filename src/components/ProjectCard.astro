@@ -11,6 +11,11 @@ interface Props {
 const { project, hidden = false } = Astro.props;
 const { data, id } = project;
 const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
+const hasPreview = Boolean(data.previewMp4 || data.previewWebm);
+
+// Resolve public/ video paths against the deploy base.
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 ---
 
 <article
@@ -18,6 +23,11 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
   data-project-card
   data-project-id={id}
   data-category={data.category}
+  data-title={data.title}
+  data-status={data.status ?? ""}
+  data-tone={data.statusTone}
+  data-summary={data.summary ?? data.blurb}
+  data-tags={data.tags.join("|")}
   hidden={hidden}
 >
   <div class="card__media">
@@ -30,6 +40,26 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
       loading="lazy"
     />
     {
+      hasPreview && (
+        <video
+          class="card__video"
+          data-preview
+          muted
+          loop
+          playsinline
+          preload="none"
+          poster={data.thumb.src}
+        >
+          {data.previewMp4 && (
+            <source src={withBase(data.previewMp4)} type="video/mp4" />
+          )}
+          {data.previewWebm && (
+            <source src={withBase(data.previewWebm)} type="video/webm" />
+          )}
+        </video>
+      )
+    }
+    {
       data.status && (
         <div class="card__badge">
           <StatusBadge status={data.status} tone={data.statusTone} />
@@ -37,6 +67,7 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
       )
     }
   </div>
+
   <div class="card__body">
     <h3 class="card__title">{data.title}</h3>
     <p class="card__blurb">{data.blurb}</p>
@@ -50,7 +81,46 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
       )
     }
   </div>
+
+  {
+    /* Transparent overlay button: the accessible click/tap target that opens the modal. */
+  }
+  <button
+    class="card__open"
+    type="button"
+    data-open-modal
+    data-project-id={id}
+    aria-label={`Open ${data.title} details`}></button>
 </article>
+
+<script>
+  // Hover-only in-card video preview. Gated behind a real pointer and motion
+  // preference. Each element plays its own video on enter, pauses+resets on leave,
+  // so only the hovered one ever plays.
+  const canHover = window.matchMedia(
+    "(hover: hover) and (pointer: fine)",
+  ).matches;
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  if (canHover && !reduce) {
+    const hosts = document.querySelectorAll<HTMLElement>(
+      "[data-project-card], [data-project-hero]",
+    );
+    hosts.forEach((host) => {
+      const video = host.querySelector<HTMLVideoElement>("video[data-preview]");
+      if (!video) return;
+      host.addEventListener("mouseenter", () => {
+        host.classList.add("is-previewing");
+        void video.play().catch(() => {});
+      });
+      host.addEventListener("mouseleave", () => {
+        host.classList.remove("is-previewing");
+        video.pause();
+        video.currentTime = 0;
+      });
+    });
+  }
+</script>
 
 <style>
   .card {
@@ -68,15 +138,26 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
     aspect-ratio: 16 / 9;
     background: var(--bg-surface-2);
   }
-  .card__img {
+  .card__img,
+  .card__video {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  .card__video {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .card.is-previewing .card__video {
+    opacity: 1;
   }
   .card__badge {
     position: absolute;
     top: 8px;
     right: 8px;
+    z-index: 1;
   }
 
   .card__body {
@@ -103,9 +184,19 @@ const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
     padding: 0;
   }
 
-  /* Hover affordance only where a real pointer exists and motion is welcome.
-     The in-card video preview (step 6) and click-to-open modal (step 7) build
-     on this element. */
+  .card__open {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    background: transparent;
+    border: 0;
+    cursor: pointer;
+  }
+  .card__open:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+
   @media (hover: hover) and (prefers-reduced-motion: no-preference) {
     .card {
       transition:

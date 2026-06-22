@@ -9,6 +9,10 @@ statusTone: "blue"
 order: 2
 thumb: "../../assets/media/finance-tracker-api/thumb.jpg"
 poster: "../../assets/media/finance-tracker-api/poster.jpg"
+previewMp4: "/media/finance-tracker-api/preview.mp4"
+previewWebm: "/media/finance-tracker-api/preview.webm"
+fullMp4: "/media/finance-tracker-api/full.mp4"
+fullWebm: "/media/finance-tracker-api/full.webm"
 links:
   - {
       label: "Source",

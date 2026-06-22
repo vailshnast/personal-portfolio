@@ -13,6 +13,10 @@ const { data, id } = project;
 const heroImage = data.poster ?? data.thumb; // poster preferred; falls back to thumb
 const teaser = data.summary ?? data.blurb;
 const tags = data.tags.slice(0, 6);
+const hasPreview = Boolean(data.previewMp4 || data.previewWebm);
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 ---
 
 <article
@@ -31,6 +35,26 @@ const tags = data.tags.slice(0, 6);
       sizes="(max-width: 1120px) 100vw, 1080px"
       loading="lazy"
     />
+    {
+      hasPreview && (
+        <video
+          class="hero__video"
+          data-preview
+          muted
+          loop
+          playsinline
+          preload="none"
+          poster={heroImage.src}
+        >
+          {data.previewMp4 && (
+            <source src={withBase(data.previewMp4)} type="video/mp4" />
+          )}
+          {data.previewWebm && (
+            <source src={withBase(data.previewWebm)} type="video/webm" />
+          )}
+        </video>
+      )
+    }
     <div class="hero__scrim"></div>
   </div>
 
@@ -50,8 +74,14 @@ const tags = data.tags.slice(0, 6);
         </ul>
       )
     }
-    {/* Wired to open the modal in step 7; a static affordance for now. */}
-    <span class="hero__action">View project</span>
+    <button
+      class="hero__action"
+      type="button"
+      data-open-modal
+      data-project-id={id}
+    >
+      View project
+    </button>
   </div>
 </article>
 
@@ -69,10 +99,20 @@ const tags = data.tags.slice(0, 6);
     inset: 0;
     z-index: -1;
   }
-  .hero__img {
+  .hero__img,
+  .hero__video {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  .hero__video {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  .hero.is-previewing .hero__video {
+    opacity: 1;
   }
   .hero__scrim {
     position: absolute;
@@ -125,8 +165,10 @@ const tags = data.tags.slice(0, 6);
     margin-top: 0.4rem;
     padding: 0.5rem 1.1rem;
     font-weight: 600;
+    border: 0;
     border-radius: var(--radius);
     background: var(--action-bg);
     color: var(--action-text);
+    cursor: pointer;
   }
 </style>

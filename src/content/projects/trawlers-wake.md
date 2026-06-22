@@ -9,6 +9,10 @@ statusTone: "green"
 order: 1
 thumb: "../../assets/media/trawlers-wake/thumb.jpg"
 poster: "../../assets/media/trawlers-wake/poster.jpg"
+previewMp4: "/media/trawlers-wake/preview.mp4"
+previewWebm: "/media/trawlers-wake/preview.webm"
+fullMp4: "/media/trawlers-wake/full.mp4"
+fullWebm: "/media/trawlers-wake/full.webm"
 links:
   - {
       label: "View on Steam",

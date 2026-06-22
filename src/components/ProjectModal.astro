@@ -1,0 +1,322 @@
+---
+import { render } from "astro:content";
+import StatusBadge from "./StatusBadge.astro";
+import type { Project } from "../lib/projects";
+
+interface Props {
+  projects: Project[];
+}
+
+const { projects } = Astro.props;
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
+
+// Pre-render each project's Markdown body once; one hidden panel per project is
+// reused as the modal content (spec-sanctioned "per-project hidden templates").
+const panels = await Promise.all(
+  projects.map(async (project) => ({
+    project,
+    Content: (await render(project)).Content,
+  })),
+);
+---
+
+<div class="modal" data-modal hidden>
+  <div class="modal__backdrop" data-modal-close></div>
+  <div class="modal__dialog" role="dialog" aria-modal="true">
+    <button
+      class="modal__close"
+      type="button"
+      data-modal-close
+      aria-label="Close dialog"
+    >
+      <span aria-hidden="true">✕</span>
+    </button>
+    <div class="modal__scroll">
+      {
+        panels.map(({ project, Content }) => {
+          const d = project.data;
+          const hasVideo = Boolean(d.fullMp4 || d.fullWebm);
+          const posterSrc = (d.poster ?? d.thumb).src;
+          return (
+            <section
+              class="panel"
+              data-modal-panel
+              data-project-id={project.id}
+              hidden
+            >
+              <div class="panel__media">
+                {hasVideo ? (
+                  <video
+                    class="panel__video"
+                    data-modal-video
+                    controls
+                    muted
+                    loop
+                    playsinline
+                    preload="none"
+                    poster={posterSrc}
+                  >
+                    {d.fullMp4 && (
+                      <source src={withBase(d.fullMp4)} type="video/mp4" />
+                    )}
+                    {d.fullWebm && (
+                      <source src={withBase(d.fullWebm)} type="video/webm" />
+                    )}
+                  </video>
+                ) : (
+                  <img
+                    class="panel__poster"
+                    src={posterSrc}
+                    alt={`${d.title} poster`}
+                  />
+                )}
+              </div>
+
+              <div class="panel__head">
+                <h2 class="panel__title" id={`modal-title-${project.id}`}>
+                  {d.title}
+                </h2>
+                <StatusBadge status={d.status} tone={d.statusTone} />
+              </div>
+              <p class="panel__meta">{d.category}</p>
+
+              <div class="prose">
+                <Content />
+              </div>
+
+              <ul class="panel__tags">
+                {d.tags.map((tag) => (
+                  <li class="tag">{tag}</li>
+                ))}
+              </ul>
+
+              <div class="panel__links">
+                {d.links.map((link) => (
+                  <a
+                    class="panel__link"
+                    href={link.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    data-link-type={link.type}
+                  >
+                    {link.label}
+                  </a>
+                ))}
+              </div>
+            </section>
+          );
+        })
+      }
+    </div>
+  </div>
+</div>
+
+<script>
+  const modal = document.querySelector<HTMLElement>("[data-modal]");
+
+  if (modal) {
+    const dialog = modal.querySelector<HTMLElement>(".modal__dialog")!;
+    const closeBtn = modal.querySelector<HTMLElement>(".modal__close")!;
+    const panels = Array.from(
+      modal.querySelectorAll<HTMLElement>("[data-modal-panel]"),
+    );
+    const reduce = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    let lastTrigger: HTMLElement | null = null;
+
+    const activePanel = () => panels.find((p) => !p.hidden) ?? null;
+
+    function focusable(): HTMLElement[] {
+      return Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null);
+    }
+
+    function open(id: string, trigger: HTMLElement) {
+      const panel = panels.find((p) => p.dataset.projectId === id);
+      if (!panel) return;
+      lastTrigger = trigger;
+      panels.forEach((p) => {
+        p.hidden = p !== panel;
+      });
+      dialog.setAttribute("aria-labelledby", `modal-title-${id}`);
+      modal!.hidden = false;
+      document.documentElement.style.overflow = "hidden";
+
+      const video = panel.querySelector<HTMLVideoElement>(
+        "video[data-modal-video]",
+      );
+      if (video && !reduce) {
+        video.currentTime = 0;
+        void video.play().catch(() => {});
+      }
+      closeBtn.focus();
+    }
+
+    function close() {
+      if (modal!.hidden) return;
+      const video = activePanel()?.querySelector<HTMLVideoElement>(
+        "video[data-modal-video]",
+      );
+      if (video) {
+        video.pause();
+        video.currentTime = 0;
+      }
+      modal!.hidden = true;
+      document.documentElement.style.overflow = "";
+      panels.forEach((p) => {
+        p.hidden = true;
+      });
+      lastTrigger?.focus();
+      lastTrigger = null;
+    }
+
+    document
+      .querySelectorAll<HTMLElement>("[data-open-modal]")
+      .forEach((trigger) => {
+        trigger.addEventListener("click", () =>
+          open(trigger.dataset.projectId ?? "", trigger),
+        );
+      });
+    modal.querySelectorAll<HTMLElement>("[data-modal-close]").forEach((el) => {
+      el.addEventListener("click", close);
+    });
+
+    modal.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        close();
+        return;
+      }
+      if (event.key !== "Tab") return;
+      const items = focusable();
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    });
+  }
+</script>
+
+<style>
+  .modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(1rem, 5vh, 3rem) 1rem;
+  }
+  .modal__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.7);
+  }
+  .modal__dialog {
+    position: relative;
+    width: min(900px, 100%);
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
+  .modal__scroll {
+    overflow-y: auto;
+    padding: clamp(1rem, 3vw, 1.75rem);
+  }
+  .modal__close {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.6rem;
+    z-index: 2;
+    width: 2rem;
+    height: 2rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius);
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .modal__close:hover {
+    border-color: var(--accent);
+  }
+
+  .panel__media {
+    aspect-ratio: 16 / 9;
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--bg-surface-2);
+    margin-bottom: 1rem;
+  }
+  .panel__video,
+  .panel__poster {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .panel__head {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .panel__title {
+    font-size: clamp(1.3rem, 3vw, 1.8rem);
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+  .panel__meta {
+    margin: 0.2rem 0 1rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .panel__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    list-style: none;
+    padding: 0;
+    margin: 1.1rem 0;
+  }
+
+  .panel__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .panel__link {
+    padding: 0.5rem 1rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-radius: var(--radius);
+    background: var(--action-bg);
+    color: var(--action-text);
+  }
+  .panel__link[data-link-type="external"],
+  .panel__link[data-link-type="demo"] {
+    background: var(--bg-surface-2);
+    color: var(--text-primary);
+    border: 1px solid var(--border-strong);
+  }
+</style>

@@ -55,11 +55,10 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
         </video>
       )
     }
-    <div class="hero__scrim"></div>
+    <span class="hero__label">Featured</span>
   </div>
 
-  <div class="hero__content">
-    <span class="hero__label">Featured</span>
+  <div class="hero__body">
     <div class="hero__heading">
       <h2 class="hero__title">{data.title}</h2>
       <StatusBadge status={data.status} tone={data.statusTone} />
@@ -87,17 +86,18 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 
 <style>
   .hero {
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-strong);
     border-radius: var(--radius-lg);
     overflow: hidden;
-    border: 1px solid var(--border-strong);
-    isolation: isolate;
   }
 
   .hero__media {
-    position: absolute;
-    inset: 0;
-    z-index: -1;
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: var(--bg-surface-2);
   }
   .hero__img,
   .hero__video {
@@ -114,29 +114,27 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
   .hero.is-previewing .hero__video {
     opacity: 1;
   }
-  .hero__scrim {
-    position: absolute;
-    inset: 0;
-    background: var(--scrim);
-  }
-
-  .hero__content {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    align-items: flex-start;
-    justify-content: flex-end;
-    min-height: clamp(280px, 42vw, 420px);
-    padding: clamp(1rem, 3vw, 2rem);
-  }
-
   .hero__label {
-    font-size: 0.74rem;
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 1;
+    padding: 0.2rem 0.55rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: var(--accent);
+    color: var(--accent-contrast);
+    background: var(--accent);
+    border-radius: var(--radius);
+  }
+
+  .hero__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+    padding: clamp(1rem, 2.5vw, 1.5rem);
   }
   .hero__heading {
     display: flex;
@@ -145,12 +143,12 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     flex-wrap: wrap;
   }
   .hero__title {
-    font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+    font-size: clamp(1.4rem, 3vw, 2rem);
     font-weight: 700;
     color: var(--text-primary);
   }
   .hero__teaser {
-    max-width: 60ch;
+    max-width: 70ch;
     color: var(--text-secondary);
   }
   .hero__tags {
@@ -160,10 +158,9 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     list-style: none;
     padding: 0;
   }
-
   .hero__action {
-    margin-top: 0.4rem;
-    padding: 0.5rem 1.1rem;
+    margin-top: 0.2rem;
+    padding: 0.55rem 1.2rem;
     font-weight: 600;
     border: 0;
     border-radius: var(--radius);

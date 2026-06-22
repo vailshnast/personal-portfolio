@@ -134,10 +134,12 @@ the modal shows the poster image.
 
 - **Videos** → `public/media/<id>/` (`preview.mp4`, `preview.webm`, `full.mp4`,
   `full.webm`). Served as-is; referenced by path.
-- **Images** (thumbnails/posters) → optimized by Astro's `<Image>`. Follow the path
-  convention the build uses (see `project-specification.md` §6 — keep image **sources**
-  where `<Image>` can process them, and keep **videos** in `public/`). Keep both for a
-  project under a folder named after its `id`.
+- **Images** (thumbnails/posters) → `src/assets/media/<id>/` (`thumb.jpg`, `poster.jpg`),
+  so Astro's `<Image>` can optimize them. Reference them in frontmatter by a path relative
+  to the `.md` file, e.g. `thumb: "../../assets/media/<id>/thumb.jpg"`. (Images under
+  `public/` are *not* processed by `<Image>`; that's why sources live in `src/`.)
+
+Both folders are named after the project `id` (the Markdown filename).
 
 ---
 

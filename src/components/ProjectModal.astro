@@ -2,11 +2,21 @@
 import { render } from "astro:content";
 import StatusBadge from "./StatusBadge.astro";
 import PlatformBadge from "./PlatformBadge.astro";
+import BlockPuzzleBanner from "./banners/BlockPuzzleBanner.astro";
+import FinanceTrackerBanner from "./banners/FinanceTrackerBanner.astro";
 import { youtubeId, type Project } from "../lib/projects";
 
 interface Props {
   projects: Project[];
 }
+
+// Same live-banner registry as ProjectCard: a project's `banner` frontmatter key
+// selects a CSS banner to fill the modal media frame in place of the `thumb`
+// poster. Kept in lockstep with the Zod enum (unknown key → build error).
+const BANNERS = {
+  "block-puzzle": BlockPuzzleBanner,
+  "finance-tracker": FinanceTrackerBanner,
+} as const;
 
 const { projects } = Astro.props;
 
@@ -37,10 +47,18 @@ const panels = await Promise.all(
           const d = project.data;
           const ytId = youtubeId(d.youtube);
           const posterSrc = d.thumb.src;
-          const isPortrait = d.orientation === "portrait";
+          // A component banner fills the 16:9 frame itself (its own backdrop +
+          // layout), bypassing the poster image and portrait letterbox below.
+          const Banner = d.banner ? BANNERS[d.banner] : undefined;
+          const isPortrait = !Banner && d.orientation === "portrait";
           const mediaBg = isPortrait
             ? `--media-bg: url(${posterSrc})`
             : undefined;
+          // Component-banner projects (e.g. FinanceTracker) lead the modal with
+          // their own content (a demo clip up top) instead of a hero media frame;
+          // the banner still appears on the grid card. Everything else shows its
+          // video/poster here.
+          const showMedia = !Banner;
           return (
             <section
               class="panel"
@@ -48,30 +66,32 @@ const panels = await Promise.all(
               data-project-id={project.id}
               hidden
             >
-              <div
-                class:list={[
-                  "panel__media",
-                  { "panel__media--portrait": isPortrait },
-                ]}
-                style={mediaBg}
-              >
-                {ytId ? (
-                  /* Iframe injected on open (see script) so a closed modal
-                     never loads a YouTube player. */
-                  <div
-                    class="panel__yt"
-                    data-modal-yt
-                    data-yt-id={ytId}
-                    data-yt-title={d.title}
-                  />
-                ) : (
-                  <img
-                    class="panel__poster"
-                    src={posterSrc}
-                    alt={`${d.title} poster`}
-                  />
-                )}
-              </div>
+              {showMedia && (
+                <div
+                  class:list={[
+                    "panel__media",
+                    { "panel__media--portrait": isPortrait },
+                  ]}
+                  style={mediaBg}
+                >
+                  {ytId ? (
+                    /* Iframe injected on open (see script) so a closed modal
+                       never loads a YouTube player. */
+                    <div
+                      class="panel__yt"
+                      data-modal-yt
+                      data-yt-id={ytId}
+                      data-yt-title={d.title}
+                    />
+                  ) : (
+                    <img
+                      class="panel__poster"
+                      src={posterSrc}
+                      alt={`${d.title} poster`}
+                    />
+                  )}
+                </div>
+              )}
 
               <div class="panel__head">
                 <h2 class="panel__title" id={`modal-title-${project.id}`}>

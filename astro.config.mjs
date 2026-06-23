@@ -12,4 +12,7 @@ export default defineConfig({
   base: '/personal-portfolio',
   output: 'static',
   integrations: [sitemap()],
+  // Production-leaning local dev: hide Astro's dev toolbar (the floating debug
+  // panel shown only in `npm run dev`; it never ships to the built site anyway).
+  devToolbar: { enabled: false },
 });

@@ -1,7 +1,7 @@
 ---
 title: "Trawler's Wake"
 blurb: "PC horror fishing game"
-category: "Games"
+category: "PC"
 tags: ["Unity", "Steam", "PC", "Simulation", "Fishing"]
 status: "In Progress"
 statusTone: "green"

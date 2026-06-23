@@ -40,7 +40,7 @@ export const site: SiteConfig = {
   ],
   themeFamily: "steam",
   defaultMode: "dark",
-  categories: ["Games", ".NET"],
+  categories: ["PC", "Mobile", "Web", "eLearning"],
   metaTitle: "Valentyn Matvieienko — Portfolio",
   metaDescription: "Selected Unity/C# and .NET projects.",
   themeColor: "#1b2838", // steam / dark --bg-page

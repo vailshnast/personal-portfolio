@@ -1,8 +1,8 @@
 ---
-// Compact icon-only platform badge (PC / Mobile / VR). Square and uniform; the
-// platform name is exposed to assistive tech via aria-label / title.
+// Compact icon-only platform badge (PC / Mobile / VR / Web / LMS). Square and
+// uniform; the platform name is exposed to assistive tech via aria-label / title.
 interface Props {
-  platform?: "PC" | "Mobile" | "VR";
+  platform?: "PC" | "Mobile" | "VR" | "Web" | "LMS";
 }
 
 const { platform } = Astro.props;
@@ -13,6 +13,9 @@ const icons: Record<string, string> = {
   Mobile:
     '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><rect x="4.5" y="1.5" width="7" height="13" rx="1.5"/><path d="M7 12.5h2"/></svg>',
   VR: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M2.5 5h11a1 1 0 0 1 1 1v3.2a1 1 0 0 1-1 1h-2.6l-1.4-1.6h-2L7.1 10.2H4.5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/></svg>',
+  Web: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><circle cx="8" cy="8" r="6.5"/><path d="M1.5 8h13M8 1.5c1.8 1.7 2.8 4 2.8 6.5S9.8 12.8 8 14.5C6.2 12.8 5.2 10.5 5.2 8S6.2 3.2 8 1.5Z"/></svg>',
+  // Graduation cap — eLearning / LMS delivery.
+  LMS: '<svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"><path d="M8 2.2 14.5 5 8 7.8 1.5 5Z"/><path d="M4.5 6.3v3.4c0 1 1.6 1.7 3.5 1.7s3.5-.7 3.5-1.7V6.3"/><path d="M14.5 5v3.3"/></svg>',
 };
 ---
 

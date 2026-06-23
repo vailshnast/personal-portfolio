@@ -1,0 +1,177 @@
+---
+// Live, CSS-drawn glass "poster" banner for the FinanceTracker API project — a
+// themeable, resolution-independent replacement for the baked PNG
+// (src/assets/media/finance-tracker/banner.png), which is kept as the modal
+// poster / OG image.
+//
+// API-console variant: a mock request/response (GET → 200 OK → JSON) inside an
+// inset frosted-glass panel that floats over the accent glow. It deliberately
+// does NOT repeat the card body's status badge, blurb or tags — it shows the one
+// thing unique to this project: that it's a REST API.
+//
+// Unlike BlockPuzzleBanner (illustrative artwork with fixed gem hues), this is UI
+// chrome: it follows the semantic-token rule so the glass, code colours and glow
+// re-theme across the four palettes and light/dark. Everything is sized in
+// container units (cqw) against the frame, so it holds at card and hero widths.
+---
+
+<div class="ftb" aria-hidden="true">
+  <div class="ftb__panel">
+    <div class="ftb__bar">
+      <span class="ftb__dots"><i></i><i></i><i></i></span>
+      <span class="ftb__label">FinanceTracker</span>
+    </div>
+
+    <div class="ftb__console">
+      <div class="ftb__req">
+        <span class="ftb__method">GET</span>
+        <span class="ftb__path">/api/v1/transactions</span>
+      </div>
+
+      <div class="ftb__status">
+        <span class="ftb__statdot"></span>
+        <span class="ftb__ok">200 OK</span>
+        <span class="ftb__ct">· application/json</span>
+      </div>
+
+      <pre
+        class="ftb__json">&#123;
+  <span class="k">"balance"</span>: <span class="n">4820.50</span>,
+  <span class="k">"currency"</span>: <span class="s">"USD"</span>
+&#125;</pre>
+    </div>
+  </div>
+</div>
+
+<style>
+  .ftb {
+    position: absolute;
+    inset: 0;
+    container-type: size;
+    overflow: hidden;
+    /* Accent glow blobs over the surface; the panel frosts these. */
+    background:
+      radial-gradient(110% 120% at 88% 6%, var(--accent-soft), transparent 60%),
+      radial-gradient(
+        110% 120% at 2% 102%,
+        var(--accent-soft),
+        transparent 55%
+      ),
+      var(--bg-surface-2);
+  }
+
+  /* Inset frosted glass: floats with a thin glowing margin around it. */
+  .ftb__panel {
+    position: absolute;
+    inset: 5.5% 4.5%;
+    display: flex;
+    flex-direction: column;
+    padding: 3.6cqw 4.2cqw;
+    border: 1px solid var(--border-strong);
+    border-radius: 4cqw;
+    background: color-mix(in srgb, var(--bg-surface) 60%, transparent);
+    box-shadow:
+      inset 0 1px 0 var(--border-strong),
+      0 2cqw 5cqw rgba(0, 0, 0, 0.28);
+    -webkit-backdrop-filter: blur(14px) saturate(1.25);
+    backdrop-filter: blur(14px) saturate(1.25);
+    overflow: hidden;
+  }
+
+  /* Window title bar */
+  .ftb__bar {
+    display: flex;
+    align-items: center;
+    gap: 3cqw;
+    padding-bottom: 2.6cqw;
+    border-bottom: 1px solid var(--border);
+  }
+  .ftb__dots {
+    display: inline-flex;
+    gap: 1.4cqw;
+  }
+  .ftb__dots i {
+    width: 1.9cqw;
+    height: 1.9cqw;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+  .ftb__dots i:nth-child(1) {
+    background: var(--badge-green-text);
+  }
+  .ftb__dots i:nth-child(2) {
+    background: var(--accent);
+  }
+  .ftb__label {
+    font-family: ui-monospace, "Consolas", "SFMono-Regular", Menlo, monospace;
+    font-size: 2.7cqw;
+    color: var(--text-muted);
+    letter-spacing: 0.02em;
+  }
+
+  /* Console body */
+  .ftb__console {
+    margin-top: 3.6cqw;
+    display: flex;
+    flex-direction: column;
+    gap: 2.6cqw;
+    font-family: ui-monospace, "Consolas", "SFMono-Regular", Menlo, monospace;
+  }
+
+  .ftb__req {
+    display: flex;
+    align-items: center;
+    gap: 2.4cqw;
+  }
+  .ftb__method {
+    padding: 0.8cqw 2.2cqw;
+    border-radius: 1.4cqw;
+    background: var(--badge-green-bg);
+    color: var(--badge-green-text);
+    font-size: 2.9cqw;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+  }
+  .ftb__path {
+    color: var(--text-primary);
+    font-size: 3.7cqw;
+    font-weight: 600;
+  }
+
+  .ftb__status {
+    display: flex;
+    align-items: center;
+    gap: 1.8cqw;
+    font-size: 3cqw;
+  }
+  .ftb__statdot {
+    width: 1.7cqw;
+    height: 1.7cqw;
+    border-radius: 50%;
+    background: var(--badge-green-text);
+  }
+  .ftb__ok {
+    color: var(--badge-green-text);
+    font-weight: 700;
+  }
+  .ftb__ct {
+    color: var(--text-muted);
+  }
+
+  .ftb__json {
+    margin: 0;
+    font-size: 3cqw;
+    line-height: 1.5;
+    color: var(--text-muted);
+    white-space: pre;
+  }
+  .ftb__json .k {
+    color: var(--accent-soft-text);
+  }
+  .ftb__json .n {
+    color: var(--badge-green-text);
+  }
+  .ftb__json .s {
+    color: var(--text-secondary);
+  }
+</style>

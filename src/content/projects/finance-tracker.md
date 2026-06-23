@@ -1,12 +1,14 @@
 ---
 title: "FinanceTracker"
 blurb: "ASP.NET Core REST API — Clean Architecture & CQRS"
-category: ".NET"
+category: "Web"
 tags: [".NET 10", "C#", "ASP.NET Core", "PostgreSQL", "CQRS"]
 status: "Open Source"
 statusTone: "blue"
+platform: "Web"
 order: 3
 thumb: "../../assets/media/finance-tracker/banner.png"
+banner: "finance-tracker"
 links:
   - {
       label: "View on GitHub",
@@ -19,6 +21,8 @@ links:
       type: "demo",
     }
 ---
+
+<div class="about-clip" data-about-clip="media/finance-tracker/about/clip1"></div>
 
 A finance tracking REST API built to go deep on ASP.NET Core architecture — Clean
 Architecture, CQRS, JWT auth, HybridCache, observability, integration tests. Started from
@@ -35,28 +39,24 @@ Architecture, CQRS, JWT auth, HybridCache, observability, integration tests. Sta
 - `Program.cs` split into focused extension methods — 70 lines, no noise
 - `Taskfile.yml` for all common commands without `cd` navigation
 
-## Demo (Aspire + Scalar)
-
-<div class="about-clip" data-about-clip="media/finance-tracker/about/clip1"></div>
-
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
-| **Architecture** | Clean Architecture (Domain, Application, Infrastructure, Api) |
-| **Runtime** | .NET 10 / C# 13 |
-| **API** | Minimal APIs with TypedResults |
-| **CQRS** | Manual handlers — zero dependencies, zero licensing risk |
-| **Validation** | FluentValidation 12 + Result pattern |
-| **Errors** | ProblemDetails (RFC 9457) + global exception handler |
-| **Database** | EF Core 10 + PostgreSQL |
-| **Caching** | Microsoft HybridCache (L1 in-memory + L2 Redis) |
-| **Auth** | ASP.NET Identity + JWT with refresh tokens |
-| **API Docs** | Scalar (modern OpenAPI UI) |
-| **Logging** | Serilog 10 structured logging |
-| **Observability** | .NET Aspire 13 + OpenTelemetry (traces, metrics, logs) |
-| **Testing** | xUnit v3 + FluentAssertions + NSubstitute + NetArchTest |
-| **Solution** | `.slnx` format + Central Package Management |
+| Layer             | Technology                                                    |
+| ----------------- | ------------------------------------------------------------- |
+| **Architecture**  | Clean Architecture (Domain, Application, Infrastructure, Api) |
+| **Runtime**       | .NET 10 / C# 13                                               |
+| **API**           | Minimal APIs with TypedResults                                |
+| **CQRS**          | Manual handlers — zero dependencies, zero licensing risk      |
+| **Validation**    | FluentValidation 12 + Result pattern                          |
+| **Errors**        | ProblemDetails (RFC 9457) + global exception handler          |
+| **Database**      | EF Core 10 + PostgreSQL                                       |
+| **Caching**       | Microsoft HybridCache (L1 in-memory + L2 Redis)               |
+| **Auth**          | ASP.NET Identity + JWT with refresh tokens                    |
+| **API Docs**      | Scalar (modern OpenAPI UI)                                    |
+| **Logging**       | Serilog 10 structured logging                                 |
+| **Observability** | .NET Aspire 13 + OpenTelemetry (traces, metrics, logs)        |
+| **Testing**       | xUnit v3 + FluentAssertions + NSubstitute + NetArchTest       |
+| **Solution**      | `.slnx` format + Central Package Management                   |
 
 ## Architecture
 
@@ -122,12 +122,12 @@ dotnet run
 
 This starts everything automatically:
 
-| Service | URL |
-|---|---|
-| **API + Scalar docs** | https://localhost:7200/scalar/v1 |
-| **Aspire Dashboard** | printed in console output on startup |
-| **pgAdmin** | printed in console output on startup |
-| **RedisInsight** | printed in console output on startup |
+| Service               | URL                                  |
+| --------------------- | ------------------------------------ |
+| **API + Scalar docs** | https://localhost:7200/scalar/v1     |
+| **Aspire Dashboard**  | printed in console output on startup |
+| **pgAdmin**           | printed in console output on startup |
+| **RedisInsight**      | printed in console output on startup |
 
 ### Run without Aspire
 
@@ -165,33 +165,33 @@ A [`Taskfile.yml`](https://github.com/vailshnast/finance-tracker-portfolio/blob/
 is included to automate common workflows via the [Task](https://taskfile.dev) runner.
 Available commands:
 
-| Command | Description |
-|---|---|
-| `task start-aspire` | Start API + Postgres + Redis + Aspire dashboard |
-| `task run` | Run API only |
-| `task build` | Build the solution |
-| `task restore` | Restore NuGet packages |
-| `task test` | Run all tests |
-| `task test-unit` | Run unit tests only |
-| `task test-arch` | Run architecture tests only |
-| `task test-filter NAME=x` | Run a single test by name |
-| `task migrate` | Apply EF Core migrations |
-| `task add-migration NAME=x` | Scaffold a new migration |
-| `task remove-migration` | Remove the last unapplied migration |
-| `task scaffold-all ENTITY=x ...` | Scaffold feature + endpoint + tests |
-| `task install-templates` | Install local `dotnet new` templates |
+| Command                          | Description                                     |
+| -------------------------------- | ----------------------------------------------- |
+| `task start-aspire`              | Start API + Postgres + Redis + Aspire dashboard |
+| `task run`                       | Run API only                                    |
+| `task build`                     | Build the solution                              |
+| `task restore`                   | Restore NuGet packages                          |
+| `task test`                      | Run all tests                                   |
+| `task test-unit`                 | Run unit tests only                             |
+| `task test-arch`                 | Run architecture tests only                     |
+| `task test-filter NAME=x`        | Run a single test by name                       |
+| `task migrate`                   | Apply EF Core migrations                        |
+| `task add-migration NAME=x`      | Scaffold a new migration                        |
+| `task remove-migration`          | Remove the last unapplied migration             |
+| `task scaffold-all ENTITY=x ...` | Scaffold feature + endpoint + tests             |
+| `task install-templates`         | Install local `dotnet new` templates            |
 
 ## Key Design Decisions
 
-| Decision | Why |
-|---|---|
-| **Manual CQRS** over MediatR | Zero licensing risk. MediatR is commercial since v13. |
-| **Scalar** over Swagger UI | Modern UI, faster, better DX. Swagger UI is legacy. |
-| **HybridCache** over IMemoryCache | Built-in stampede protection, L1+L2, automatic serialization. |
-| **Result pattern** over exceptions | Explicit error handling, no hidden control flow, better API contracts. |
-| **AuditInterceptor** over handler logic | Audit fields (`CreatedAt`, `UpdatedBy`) belong at the persistence layer — not scattered across commands. |
-| **Manual handler registration** over Scrutor | Zero extra dependencies — assembly reflection is ~40 lines. |
-| **`.slnx`** over `.sln` | XML-based, merge-friendly, the future of .NET solutions. |
+| Decision                                     | Why                                                                                                      |
+| -------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| **Manual CQRS** over MediatR                 | Zero licensing risk. MediatR is commercial since v13.                                                    |
+| **Scalar** over Swagger UI                   | Modern UI, faster, better DX. Swagger UI is legacy.                                                      |
+| **HybridCache** over IMemoryCache            | Built-in stampede protection, L1+L2, automatic serialization.                                            |
+| **Result pattern** over exceptions           | Explicit error handling, no hidden control flow, better API contracts.                                   |
+| **AuditInterceptor** over handler logic      | Audit fields (`CreatedAt`, `UpdatedBy`) belong at the persistence layer — not scattered across commands. |
+| **Manual handler registration** over Scrutor | Zero extra dependencies — assembly reflection is ~40 lines.                                              |
+| **`.slnx`** over `.sln`                      | XML-based, merge-friendly, the future of .NET solutions.                                                 |
 
 ## AI Development with CLAUDE.md
 
@@ -209,14 +209,14 @@ that repetition by encoding project rules once, permanently.
 
 ### What this project's CLAUDE.md contains
 
-| Section | Purpose |
-|---|---|
-| **Tech Stack** | Exact versions and key libraries so Claude targets the right APIs |
-| **Architecture Rules** | No repository pattern, no AutoMapper, handlers must be sealed — prevents wrong suggestions |
-| **Naming Conventions** | `Create[Entity]Command`, `Get[Entity]Query`, `[Command]Handler` — keeps generated code consistent |
-| **Patterns to Avoid** | MediatR, Scrutor, stored procedures, exceptions for business logic — Claude will never suggest these |
-| **Commands** | All `task` and `dotnet` commands with their raw equivalents |
-| **Domain Terms** | What `Category`, `Transaction`, `Budget` map to — prevents misinterpretation |
+| Section                | Purpose                                                                                              |
+| ---------------------- | ---------------------------------------------------------------------------------------------------- |
+| **Tech Stack**         | Exact versions and key libraries so Claude targets the right APIs                                    |
+| **Architecture Rules** | No repository pattern, no AutoMapper, handlers must be sealed — prevents wrong suggestions           |
+| **Naming Conventions** | `Create[Entity]Command`, `Get[Entity]Query`, `[Command]Handler` — keeps generated code consistent    |
+| **Patterns to Avoid**  | MediatR, Scrutor, stored procedures, exceptions for business logic — Claude will never suggest these |
+| **Commands**           | All `task` and `dotnet` commands with their raw equivalents                                          |
+| **Domain Terms**       | What `Category`, `Transaction`, `Budget` map to — prevents misinterpretation                         |
 
 ### Design principle
 

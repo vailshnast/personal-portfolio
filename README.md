@@ -108,7 +108,7 @@ category: "Game dev"              # required — MUST match a category in site.t
 tags: ["Unity", "URP", "C#"]      # required — tech pills
 status: "Shipped"                 # optional — badge text
 statusTone: "green"               # optional — green | blue | neutral (default neutral)
-platform: "PC"                    # optional — PC | Mobile | VR (icon badge on the card)
+platform: "PC"                    # optional — PC | Mobile | VR | Web | LMS (icon badge on the card)
 order: 1                          # optional — sort key, ascending (default 999)
 orientation: "landscape"          # optional — "landscape" (default) or "portrait" (9:16)
 thumb: "…/banner.jpg"            # required — card capsule / initial image

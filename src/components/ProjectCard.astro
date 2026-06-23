@@ -2,6 +2,8 @@
 import { Image } from "astro:assets";
 import StatusBadge from "./StatusBadge.astro";
 import PlatformBadge from "./PlatformBadge.astro";
+import BlockPuzzleBanner from "./banners/BlockPuzzleBanner.astro";
+import FinanceTrackerBanner from "./banners/FinanceTrackerBanner.astro";
 import { youtubeId, type Project } from "../lib/projects";
 
 interface Props {
@@ -9,15 +11,27 @@ interface Props {
   hidden?: boolean;
 }
 
+// Registry of live CSS banners. A project's `banner` frontmatter key selects one
+// to render the card media in place of the `thumb` image. The Zod schema's enum
+// keeps this map and the allowed values in lockstep (unknown key → build error).
+const BANNERS = {
+  "block-puzzle": BlockPuzzleBanner,
+  "finance-tracker": FinanceTrackerBanner,
+} as const;
+
 const { project, hidden = false } = Astro.props;
 const { data, id } = project;
 const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
 // When set, the hover preview is a YouTube embed; otherwise the card is static.
 const ytId = youtubeId(data.youtube);
 
+// A component banner fills the 16:9 frame itself (its own backdrop + layout), so
+// it bypasses the image path and the portrait letterbox treatment below.
+const Banner = data.banner ? BANNERS[data.banner] : undefined;
+
 // Portrait media is letterboxed (object-fit: contain) over a blurred backdrop
 // built from the thumbnail, instead of being cropped to the 16:9 frame.
-const isPortrait = data.orientation === "portrait";
+const isPortrait = !Banner && data.orientation === "portrait";
 const mediaBg = isPortrait ? `--media-bg: url(${data.thumb.src})` : undefined;
 ---
 
@@ -32,14 +46,21 @@ const mediaBg = isPortrait ? `--media-bg: url(${data.thumb.src})` : undefined;
     class:list={["card__media", { "card__media--portrait": isPortrait }]}
     style={mediaBg}
   >
-    <Image
-      class="card__img"
-      src={data.thumb}
-      alt={`${data.title} cover art`}
-      widths={[520, 760, 1040, 1280]}
-      sizes="(max-width: 600px) 92vw, (max-width: 1180px) 46vw, 520px"
-      loading="lazy"
-    />
+    {
+      Banner ? (
+        <Banner />
+      ) : (
+        <Image
+          class="card__img"
+          src={data.thumb}
+          alt={`${data.title} cover art`}
+          widths={[520, 760, 1040, 1280]}
+          sizes="(max-width: 600px) 92vw, (max-width: 1180px) 46vw, 520px"
+          quality={95}
+          loading="lazy"
+        />
+      )
+    }
     {
       ytId && (
         /* Facade: the iframe is injected on hover (see script) so the page
@@ -182,6 +203,11 @@ const mediaBg = isPortrait ? `--media-bg: url(${data.thumb.src})` : undefined;
   .card__media--portrait .card__img {
     object-fit: contain;
     z-index: 1;
+  }
+  /* Portrait raises the image to z-index:1; lift the preview above it so the
+     injected iframe isn't hidden behind the thumbnail. */
+  .card__media--portrait .card__yt {
+    z-index: 2;
   }
   .card__yt {
     opacity: 0;

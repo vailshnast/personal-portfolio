@@ -190,7 +190,7 @@ Zod schema. **Confirm the exact current API via the Astro Docs MCP** before writ
 | `tags` | string[] | ✅ | Tech pills (cap display at ~4 on card, all in modal) |
 | `status` | string | ➖ | Badge text, e.g. "Shipped", "Live demo", "Production" |
 | `statusTone` | enum('green','blue','neutral') | ➖ | Badge color intent. Default 'neutral'. |
-| `platform` | enum('PC','Mobile','VR') | ➖ | Target platform; shown as an icon badge (top-left of the card, in the modal head). |
+| `platform` | enum('PC','Mobile','VR','Web','LMS') | ➖ | Target platform; shown as an icon badge (top-left of the card, in the modal head). |
 | `order` | number | ➖ | Sort key, ascending. Lower = earlier. Default 999. |
 | `orientation` | enum('landscape','portrait') | ➖ | Media aspect. `portrait` (9:16) is letterboxed over a blurred backdrop instead of cropped. Default 'landscape'. |
 | `thumb` | image | ✅ | Card capsule / initial image (use `image()` helper for `astro:assets`). A Steam `banner.jpg` works well. |
@@ -408,7 +408,7 @@ line, rendered Markdown description, full tag list, and the `links` as buttons (
 Maps `statusTone` → badge tokens (`green` / `blue` / `neutral`). Renders `status` text.
 
 ### PlatformBadge.astro
-Renders the `platform` (`PC` / `Mobile` / `VR`) as a compact **icon-only** square badge
+Renders the `platform` (`PC` / `Mobile` / `VR` / `Web` / `LMS`) as a compact **icon-only** square badge
 (uniform 32px; name exposed via `aria-label` / `title`). Shown top-left of the card and in
 the modal head. Uses `--accent` / `--accent-contrast`.
 

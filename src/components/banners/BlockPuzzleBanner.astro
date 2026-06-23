@@ -1,0 +1,138 @@
+---
+// Live, CSS-drawn "poster" banner for the Block Puzzle project — a vector
+// replacement for the baked screenshot (src/assets/media/tetris/banner.jpg),
+// which is kept as the modal poster / portrait backdrop.
+//
+// NOTE ON RAW COLORS: this is illustrative artwork, not themeable UI chrome. A
+// ruby is red and the game's backdrop is blue in every palette, so the gem hues
+// and the blue gradient are intentionally fixed here and do NOT follow the
+// semantic-token rule that governs the rest of the components. It is the exact
+// same "content" the raster banner was — just rendered as scalable DOM.
+//
+// Each gem is sized purely by `font-size` (width/height = 1em), so every facet,
+// bevel and glow scales with the card. Sizes use container units (cqw) relative
+// to the letterboxed portrait stage, so the composition holds at any card width.
+
+// hue per gem (HSL hue degrees); the hero is the emerald the icon shipped with.
+const accents = [
+  { h: 0, x: 8.8, y: 23.7 }, // ruby     (top-left)
+  { h: 38, x: 63.9, y: 23.7 }, // amber    (top-right)
+  { h: 210, x: 8.8, y: 56.0 }, // sapphire (bottom-left)
+  { h: 280, x: 63.9, y: 56.0 }, // amethyst (bottom-right)
+];
+---
+
+<div class="bpb" aria-hidden="true">
+  <div class="bpb__stage">
+    {
+      accents.map((g) => (
+        <span
+          class="gem gem--accent"
+          style={`--h:${g.h}; left:${g.x}%; top:${g.y}%`}
+        />
+      ))
+    }
+    <span class="gem gem--hero" style="--h:140; left:22%; top:30%"></span>
+    <div class="bpb__title">
+      <span>BLOCK</span>
+      <span>PUZZLE</span>
+    </div>
+  </div>
+</div>
+
+<style>
+  .bpb {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    /* The game's blue backdrop; doubles as the letterbox bars on the sides. */
+    background:
+      radial-gradient(
+        130% 95% at 50% 26%,
+        #2f72a1 0%,
+        #1d4f7d 46%,
+        #0e2f53 100%
+      ),
+      #0e2f53;
+  }
+  /* Centered 9:16 stage = a portrait poster letterboxed into the 16:9 card,
+     matching how the YouTube Short sits on hover. Container for cqw sizing. */
+  .bpb__stage {
+    position: relative;
+    height: 100%;
+    aspect-ratio: 9 / 16;
+    container-type: size;
+  }
+
+  /* A faceted gem tile. width/height = 1em → size is driven entirely by
+     font-size, so bevels and glows (in em) scale with it. */
+  .gem {
+    position: absolute;
+    width: 1em;
+    height: 1em;
+    border-radius: 0.22em;
+    background:
+      radial-gradient(
+        circle at 50% 36%,
+        hsl(var(--h) 96% 84% / 0.95),
+        transparent 55%
+      ),
+      conic-gradient(
+        from 90deg,
+        hsl(var(--h) 72% 36%),
+        hsl(var(--h) 90% 64%),
+        hsl(var(--h) 66% 31%),
+        hsl(var(--h) 92% 68%),
+        hsl(var(--h) 70% 38%),
+        hsl(var(--h) 90% 62%),
+        hsl(var(--h) 66% 31%),
+        hsl(var(--h) 92% 66%),
+        hsl(var(--h) 72% 36%)
+      );
+    box-shadow:
+      inset 0 0 0 0.06em hsl(var(--h) 55% 88% / 0.45),
+      inset 0 0.08em 0.45em hsl(var(--h) 96% 90% / 0.45),
+      inset 0 -0.1em 0.4em hsl(var(--h) 60% 12% / 0.6),
+      0 0.15em 0.4em rgba(0, 0, 0, 0.5);
+    filter: drop-shadow(0 0 0.45em hsl(var(--h) 92% 50% / 0.35));
+  }
+  .gem--accent {
+    font-size: 28cqw;
+  }
+  .gem--hero {
+    font-size: 56cqw;
+    z-index: 1;
+  }
+
+  .bpb__title {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 6%;
+    text-align: center;
+    line-height: 0.9;
+  }
+  .bpb__title span {
+    display: block;
+    font-family: "Arial Black", "Arial Narrow Bold", system-ui, sans-serif;
+    font-weight: 900;
+    font-size: 26cqw;
+    letter-spacing: 0.01em;
+    background: linear-gradient(#ffe79a, #f6c945 55%, #dd9c12);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-stroke: 0.045em #3a2606;
+    filter: drop-shadow(0 0.025em 0.02em rgba(0, 0, 0, 0.55));
+  }
+  /* Fallback for engines without background-clip:text — show solid gold. */
+  @supports not (
+    (-webkit-background-clip: text) or (background-clip: text)
+  ) {
+    .bpb__title span {
+      color: #f6c945;
+    }
+  }
+</style>

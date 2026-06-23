@@ -1,7 +1,7 @@
 ---
 title: "UNDISCLOSED"
 blurb: "1950s co-op horror — FBI paranormal investigation"
-category: "Games"
+category: "PC"
 tags: ["Unity", "Steam", "PC", "Co-op", "Horror"]
 status: "In Progress"
 statusTone: "green"

@@ -1,37 +1,60 @@
 ---
 title: "Trawler's Wake"
 blurb: "PC horror fishing game"
-summary: "Shipped Steam horror fishing game with ragdoll fish physics and editor automation."
-category: "Game dev"
-tags: ["Unity", "URP", "C#", "Steam", "Shaders"]
-status: "Shipped"
+category: "Games"
+tags: ["Unity", "Steam", "PC", "Simulation", "Fishing"]
+status: "In Progress"
 statusTone: "green"
+platform: "PC"
 order: 1
-thumb: "../../assets/media/trawlers-wake/thumb.jpg"
-poster: "../../assets/media/trawlers-wake/poster.jpg"
-previewMp4: "/media/trawlers-wake/preview.mp4"
-previewWebm: "/media/trawlers-wake/preview.webm"
-fullMp4: "/media/trawlers-wake/full.mp4"
-fullWebm: "/media/trawlers-wake/full.webm"
+thumb: "../../assets/media/trawlers-wake/banner.jpg"
+youtube: "https://www.youtube.com/watch?v=oMGCQ8i6BRc"
 links:
   - {
       label: "View on Steam",
-      href: "https://store.steampowered.com/",
+      href: "https://store.steampowered.com/app/3676140/Trawlers_Wake/",
       type: "steam",
-    }
-  - {
-      label: "Source",
-      href: "https://github.com/vailshnast/trawlers-wake",
-      type: "github",
     }
 ---
 
-A PC horror fishing game built in **Unity 6 (URP)**. You crew a derelict trawler
-through fog-bound waters, hauling in catches that are increasingly wrong.
+_A cheap trip to a paradise harbor lands you in a rotten fishing town full of mutants,
+anomalies, and fish worth a fortune. Fish by day, sell your catch, upgrade your old trawler,
+dig up the story, and try not to kick the bucket after dark._
 
-Technical highlights:
+**"YOU'LL NEVER WANT TO LEAVE!"**
 
-- **Ragdoll fish physics** with spring-jointed bobbers for believable struggles on the line.
-- **Catmull-Rom AI pathing** so the thing in the water moves on smooth, readable arcs.
-- Custom **crack and wetness shaders** for the hull and deck under rain.
-- An **Odin-based prefab automation pipeline** that cut content iteration time substantially.
+You expected a paradise getaway with sand, sun, and relaxation. Instead, you arrive at a
+decaying fishing backwater where chaos erupts immediately. The location features anomaly
+zones, mutants, flooded areas, abandoned research facilities, and a sea behaving unnaturally.
+
+Welcome to GREYWHARF!
+
+<div class="about-clip" data-about-clip="media/trawlers-wake/about/clip1"></div>
+
+**DAYTIME: FILL THE CRATES, CASH IN**
+
+Grab your fishing rod and set sail for your catch. You might pull in a healthy fish, old
+debris, or something undocumented. Sell everything you can carry to drain the trader's wallet
+and purchase better equipment. Daytime remains relatively peaceful aside from aggressive
+seagulls. You can relax while fishing or explore new areas to discover interesting items or
+larger fish.
+
+<div class="about-clip" data-about-clip="media/trawlers-wake/about/clip2"></div>
+
+**OLD, RUSTY, STILL KICKING**
+
+Your rusty trawler was once formidable but has aged significantly. Now it serves as your
+transportation, storage, and survival tool. The basic systems function, though maintaining it
+requires effort. You'll manage fuel consumption, repair the engine, scavenge upgrade
+components, and earn cash for improvements. With dedication and strategy, even this weathered
+vessel can regain legendary status.
+
+<div class="about-clip" data-about-clip="media/trawlers-wake/about/clip3"></div>
+
+**NIGHT: HIGH PROFITS, LOW SURVIVAL ODDS**
+
+Nocturnal catches yield exceptional value, but danger escalates dramatically. After sunset,
+all creatures—aquatic, airborne, and terrestrial—hunt your catch and you. You become prey
+unless well-equipped. Remain inconspicuous while preparing to fight or flee instantly.
+
+<div class="about-clip" data-about-clip="media/trawlers-wake/about/clip4"></div>

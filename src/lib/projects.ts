@@ -17,6 +17,20 @@ export async function getProjects(): Promise<Project[]> {
   });
 }
 
+/**
+ * Extract an 11-char YouTube video id from a watch/share/embed URL or a bare
+ * id. Returns undefined for empty input or anything that isn't recognizable,
+ * so callers can treat "no id" as "fall back to self-hosted video / poster".
+ */
+export function youtubeId(input?: string): string | undefined {
+  if (!input) return undefined;
+  const url = input.match(
+    /(?:youtu\.be\/|[?&]v=|\/embed\/|\/shorts\/)([\w-]{11})/,
+  );
+  if (url) return url[1];
+  return /^[\w-]{11}$/.test(input) ? input : undefined;
+}
+
 /** Narrow an already-ordered list to a category. `'All'` returns it unchanged. */
 export function filterByCategory(
   projects: Project[],

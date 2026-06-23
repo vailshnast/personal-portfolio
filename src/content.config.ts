@@ -29,16 +29,19 @@ const projects = defineCollection({
       tags: z.array(z.string()).min(1),
       status: z.string().optional(),
       statusTone: z.enum(["green", "blue", "neutral"]).default("neutral"),
+      // Target platform, shown as a prominent fixed-width badge on the card.
+      platform: z.enum(["PC", "Mobile", "VR"]).optional(),
       order: z.number().default(999),
-      // Image sources live in src/assets/media/<id>/ so astro:assets can optimize them.
+      // Media orientation. "portrait" media (9:16) is shown letterboxed with a
+      // blurred backdrop instead of cropped to the 16:9 frame. Default landscape.
+      orientation: z.enum(["landscape", "portrait"]).default("landscape"),
+      // Card capsule / initial image. Lives in src/assets/media/<id>/ so
+      // astro:assets can optimize it.
       thumb: image(),
-      // Video paths point at public/media/<id>/ and are served as-is (plain strings).
-      previewMp4: z.string().optional(),
-      previewWebm: z.string().optional(),
-      fullMp4: z.string().optional(),
-      fullWebm: z.string().optional(),
-      // Modal poster; falls back to `thumb` when absent.
-      poster: image().optional(),
+      // YouTube watch/share URL (or bare 11-char id). Powers BOTH the card hover
+      // preview (muted autoplay loop) and the modal (full embed). When absent,
+      // the card shows only `thumb` and the modal shows it as a still.
+      youtube: z.string().optional(),
       links: z
         .array(
           z.object({

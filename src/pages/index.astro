@@ -2,17 +2,15 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Header from "../components/Header.astro";
 import FilterTabs from "../components/FilterTabs.astro";
-import FeaturedHero from "../components/FeaturedHero.astro";
 import ProjectGrid from "../components/ProjectGrid.astro";
 import ProjectModal from "../components/ProjectModal.astro";
 import { getProjects } from "../lib/projects";
 import { site } from "../config/site";
 
 const projects = await getProjects();
-// Hero = first project overall for the default "All" view; filtering recomputes
-// it client-side (see FilterTabs). Each project is pre-rendered as both a hero
-// and a card so no JS is needed to see the catalog.
-const featuredId = projects.length > 0 ? projects[0].id : "";
+// A single uniform capsule grid (no featured hero). The server renders every
+// card; filtering only narrows the grid client-side, so projects are visible
+// without JavaScript.
 ---
 
 <BaseLayout>
@@ -25,13 +23,8 @@ const featuredId = projects.length > 0 ? projects[0].id : "";
       ) : (
         <>
           <FilterTabs />
-          <section class="featured" aria-label="Featured project">
-            {projects.map((project, i) => (
-              <FeaturedHero project={project} hidden={i !== 0} />
-            ))}
-          </section>
           <section class="catalog" aria-label="All projects">
-            <ProjectGrid projects={projects} featuredId={featuredId} />
+            <ProjectGrid projects={projects} />
             <p class="empty" data-projects-empty hidden>
               No projects in this category yet.
             </p>
@@ -48,10 +41,6 @@ const featuredId = projects.length > 0 ? projects[0].id : "";
     max-width: 1120px;
     margin: 0 auto;
     padding: clamp(1rem, 4vw, 2rem) clamp(1rem, 4vw, 2rem) 4rem;
-  }
-
-  .featured {
-    margin-bottom: 1.5rem;
   }
 
   .empty {

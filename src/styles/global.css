@@ -103,6 +103,48 @@ body {
   border-radius: var(--radius);
   font-size: 0.9em;
 }
+/* Fenced code blocks (e.g. the README's ASCII architecture diagram): scroll
+   horizontally rather than wrap so the art stays aligned. The inner <code>
+   inherits no background/padding so it reads as one block. */
+.prose pre {
+  background: var(--bg-surface-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  padding: 0.9rem 1rem;
+  overflow-x: auto;
+  font-size: 0.82rem;
+  line-height: 1.5;
+}
+.prose pre code {
+  background: none;
+  color: var(--text-secondary);
+  padding: 0;
+  font-size: inherit;
+}
+.prose table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.prose th,
+.prose td {
+  border: 1px solid var(--border-strong);
+  padding: 0.45rem 0.7rem;
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  color: var(--text-primary);
+  background: var(--bg-surface-2);
+  font-weight: 600;
+}
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius);
+}
 
 /* Hide visually but keep available to assistive tech. */
 .visually-hidden {

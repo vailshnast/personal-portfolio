@@ -1,7 +1,8 @@
 ---
 import { Image } from "astro:assets";
 import StatusBadge from "./StatusBadge.astro";
-import type { Project } from "../lib/projects";
+import PlatformBadge from "./PlatformBadge.astro";
+import { youtubeId, type Project } from "../lib/projects";
 
 interface Props {
   project: Project;
@@ -11,11 +12,13 @@ interface Props {
 const { project, hidden = false } = Astro.props;
 const { data, id } = project;
 const tags = data.tags.slice(0, 4); // cap on the card; the modal shows them all
-const hasPreview = Boolean(data.previewMp4 || data.previewWebm);
+// When set, the hover preview is a YouTube embed; otherwise the card is static.
+const ytId = youtubeId(data.youtube);
 
-// Resolve public/ video paths against the deploy base.
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
+// Portrait media is letterboxed (object-fit: contain) over a blurred backdrop
+// built from the thumbnail, instead of being cropped to the 16:9 frame.
+const isPortrait = data.orientation === "portrait";
+const mediaBg = isPortrait ? `--media-bg: url(${data.thumb.src})` : undefined;
 ---
 
 <article
@@ -25,33 +28,35 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
   data-category={data.category}
   hidden={hidden}
 >
-  <div class="card__media">
+  <div
+    class:list={["card__media", { "card__media--portrait": isPortrait }]}
+    style={mediaBg}
+  >
     <Image
       class="card__img"
       src={data.thumb}
       alt={`${data.title} cover art`}
-      widths={[178, 356, 534]}
-      sizes="(max-width: 600px) 45vw, 220px"
+      widths={[520, 760, 1040, 1280]}
+      sizes="(max-width: 600px) 92vw, (max-width: 1180px) 46vw, 520px"
       loading="lazy"
     />
     {
-      hasPreview && (
-        <video
-          class="card__video"
-          data-preview
-          muted
-          loop
-          playsinline
-          preload="none"
-          poster={data.thumb.src}
-        >
-          {data.previewMp4 && (
-            <source src={withBase(data.previewMp4)} type="video/mp4" />
-          )}
-          {data.previewWebm && (
-            <source src={withBase(data.previewWebm)} type="video/webm" />
-          )}
-        </video>
+      ytId && (
+        /* Facade: the iframe is injected on hover (see script) so the page
+           never loads a YouTube player until the visitor actually hovers. */
+        <div
+          class="card__yt"
+          data-yt-preview
+          data-yt-id={ytId}
+          aria-hidden="true"
+        />
+      )
+    }
+    {
+      data.platform && (
+        <div class="card__platform">
+          <PlatformBadge platform={data.platform} />
+        </div>
       )
     }
     {
@@ -89,29 +94,41 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 </article>
 
 <script>
-  // Hover-only in-card video preview. Gated behind a real pointer and motion
-  // preference. Each element plays its own video on enter, pauses+resets on leave,
-  // so only the hovered one ever plays.
+  // Hover-only in-card YouTube preview. Gated behind a real pointer and motion
+  // preference. The iframe is injected on enter and removed on leave, so the page
+  // never loads a player up front and only the hovered card ever plays.
   const canHover = window.matchMedia(
     "(hover: hover) and (pointer: fine)",
   ).matches;
   const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   if (canHover && !reduce) {
-    const hosts = document.querySelectorAll<HTMLElement>(
-      "[data-project-card], [data-project-hero]",
-    );
+    const hosts = document.querySelectorAll<HTMLElement>("[data-project-card]");
     hosts.forEach((host) => {
-      const video = host.querySelector<HTMLVideoElement>("video[data-preview]");
-      if (!video) return;
+      const yt = host.querySelector<HTMLElement>("[data-yt-preview]");
+      if (!yt) return;
+
       host.addEventListener("mouseenter", () => {
         host.classList.add("is-previewing");
-        void video.play().catch(() => {});
+        if (!yt.firstElementChild) {
+          const id = yt.dataset.ytId!;
+          const frame = document.createElement("iframe");
+          // Muted, controls-free, looping autoplay = the silent hover loop.
+          frame.src =
+            `https://www.youtube-nocookie.com/embed/${id}` +
+            `?autoplay=1&mute=1&loop=1&playlist=${id}` +
+            `&controls=0&modestbranding=1&playsinline=1&rel=0&disablekb=1`;
+          frame.allow = "autoplay; encrypted-media";
+          frame.setAttribute("tabindex", "-1");
+          frame.setAttribute("aria-hidden", "true");
+          yt.appendChild(frame);
+        }
       });
+
       host.addEventListener("mouseleave", () => {
         host.classList.remove("is-previewing");
-        video.pause();
-        video.currentTime = 0;
+        // Removing the iframe stops playback and frees the network/CPU.
+        yt.replaceChildren();
       });
     });
   }
@@ -133,25 +150,56 @@ const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
     aspect-ratio: 16 / 9;
     background: var(--bg-surface-2);
   }
-  .card__img,
-  .card__video {
+  .card__img {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-  .card__video {
+  /* YouTube facade fills the frame; clicks fall through to the open button. */
+  .card__yt {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+  .card__yt :global(iframe) {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Portrait: show the whole frame (contain) over a blurred backdrop of itself. */
+  .card__media--portrait::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--media-bg) center / cover no-repeat;
+    filter: blur(22px) brightness(0.55);
+    transform: scale(1.25);
+  }
+  .card__media--portrait .card__img {
+    object-fit: contain;
+    z-index: 1;
+  }
+  .card__yt {
     opacity: 0;
     transition: opacity 0.2s ease;
   }
-  .card.is-previewing .card__video {
+  .card.is-previewing .card__yt {
     opacity: 1;
   }
   .card__badge {
     position: absolute;
     top: 8px;
     right: 8px;
+    z-index: 1;
+  }
+  .card__platform {
+    position: absolute;
+    top: 8px;
+    left: 8px;
     z-index: 1;
   }
 

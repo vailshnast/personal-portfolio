@@ -6,7 +6,7 @@ session. For full build detail see **`project-specification.md`**; for human usa
 
 ## What this is
 
-A static, Steam-store-inspired developer portfolio. Projects-first: featured hero +
+A static, Steam-store-inspired developer portfolio. Projects-first: a uniform
 capsule grid + category filter tabs; hover shows an in-card video preview;
 click opens an in-page modal with the full video, description, and repo links. Two-axis
 theming (owner picks a color **family**; visitor toggles **dark/light**). Deployed to
@@ -45,7 +45,8 @@ npx prettier . --write   # format (uses prettier-plugin-astro)
 - **No CSS framework.** Plain CSS + custom properties only. No Tailwind.
 - **No UI framework.** No React/Vue/Svelte/Solid. Interactivity is vanilla TS in Astro
   `<script>` tags. Ship as little JS as possible.
-- **No Git LFS.** GitHub Pages won't serve it. Videos are committed plainly in `public/`.
+- **No Git LFS.** GitHub Pages won't serve it. Video is embedded from **YouTube**, not
+  committed — only lightweight `astro:assets` images live in the repo.
 - **No backend, no database, no CMS, no auth, no i18n, no blog.** Out of scope.
 - **No per-project routes / deep-links.** Detail is a modal, not a page. (May come later.)
 
@@ -58,12 +59,12 @@ src/content.config.ts     # Content Collection + Zod schema (validates project f
 src/content/projects/*.md # one file per project; body = long description (modal)
 src/styles/themes.css     # all four palettes as CSS variables (semantic tokens)
 src/lib/                   # projects.ts (load/sort/filter), theme.ts (no-flash + toggle)
-src/components/            # Header, ThemeToggle, FilterTabs, FeaturedHero, ProjectCard,
-                           # ProjectGrid, ProjectModal, StatusBadge
+src/components/            # Header, ThemeToggle, FilterTabs, ProjectCard, ProjectGrid,
+                           # ProjectModal, StatusBadge, PlatformBadge
 src/layouts/BaseLayout.astro  # <head>: SEO/OG/Twitter meta, theme-color, sitemap + favicon links
 src/pages/index.astro      # the main page
 src/pages/404.astro        # themed not-found page (GitHub Pages serves 404.html)
-public/media/<id>/         # per-project videos (preview.*, full.*) + posters per spec
+src/assets/media/<id>/     # per-project banner/thumbnail image (astro:assets optimizes it)
 public/robots.txt          # points crawlers at the sitemap
 .github/workflows/deploy.yml
 astro.config.mjs           # site + base (GitHub Pages) + @astrojs/sitemap integration
@@ -89,7 +90,7 @@ astro.config.mjs           # site + base (GitHub Pages) + @astrojs/sitemap integ
 
 **Behavior**
 - **Projects-first, no endless scroll.** Default ("All") view must show projects **with
-  JavaScript disabled.** JS only enhances (filter, hero recompute, hover preview, modal, toggle).
+  JavaScript disabled.** JS only enhances (filter, hover preview, modal, toggle).
 - **Hover depends on a pointer.** Gate the in-card video preview behind
   `(hover: hover)` / `(pointer: fine)`. On touch, a tap opens the modal directly.
 - **Modal**: focus trap, `Esc`/backdrop/✕ to close, return focus to the trigger, lock body
@@ -99,11 +100,29 @@ astro.config.mjs           # site + base (GitHub Pages) + @astrojs/sitemap integ
   `prefers-color-scheme` (initial mode).
 
 **Media**
-- Hover/modal videos: `<video muted loop playsinline>` with **MP4 + WebM** sources,
-  `preload="none"` (hover) / `"metadata"` (modal), `poster` set. **Never autoplay on load;
-  never play more than the hovered one.** Play on `mouseenter`, pause+reset on `mouseleave`.
-- Thumbnails/posters go through `astro:assets` `<Image>` with real `alt` text.
-- Keep total media lean (target < ~50 MB). Recording/encoding standard is in README.
+- **Video is YouTube only.** A project's `youtube` frontmatter (watch/share URL or bare
+  11-char id) drives **both** the card hover preview and the modal. The iframe is
+  **injected on demand** (on hover / on modal-open) via a facade `<div>` and **torn down**
+  on leave/close — the page must never load a YouTube player before interaction, and only
+  the hovered/open one may exist. Use `youtube-nocookie.com/embed/…`. Hover =
+  `autoplay&mute&loop&controls=0` (silent loop; the facade is `pointer-events:none` so the
+  open button still gets the click); modal = `autoplay&mute&controls=1` so the visitor can
+  unmute. Reduced motion ⇒ no `autoplay`. `id` extraction lives in `lib/projects.ts`
+  (`youtubeId`). No self-hosted `<video>`, no MP4/WebM, no encode script — that is gone.
+- A project with no `youtube` is valid: the card is a static image, the modal shows it as a
+  still. The grid never breaks.
+- **Inline "About" clips** (optional): short **silent** looping clips embedded *within* the
+  modal description. Drop the files in `public/media/<id>/about/` (`clipN.webm` + `clipN.mp4`
+  + `clipN.poster.avif`) and place `<div class="about-clip"
+  data-about-clip="media/<id>/about/clipN"></div>` in the Markdown body. The modal script
+  injects an `autoplay muted loop` `<video>` (or, under reduced motion, just the poster
+  image) on open and tears it down on close — paths run through `BASE_URL`, so **never put a
+  leading `/` or hardcode the base** in the placeholder. These are the *only* committed video
+  files; the main project video is still YouTube.
+- The card/modal **image** (`thumb`) goes through `astro:assets` `<Image>` with real `alt`
+  text. Source lives in `src/assets/media/<id>/` (e.g. a Steam `banner.jpg`).
+- **Orientation**: media is 16:9 `object-fit: cover` by default. `orientation: portrait`
+  projects render the image `contain` over a blurred backdrop (card, modal).
 
 **GitHub Pages**
 - `astro.config.mjs` `base` must match the repo type: `'/'` for a `USERNAME.github.io`

@@ -4,7 +4,7 @@ A fast, static **developer portfolio** inspired by the Steam store. It leads wit
 projects: visitors see everything at a glance, preview videos on hover, and open a full
 detail modal on click. Built with Astro, hosted free on GitHub Pages.
 
-- **Featured hero** + **capsule grid** of projects, with **category filter tabs**.
+- **Capsule grid** of projects, with **category filter tabs**.
 - **Hover** → in-card video preview.
 - **Click** → in-page modal with the full video, description, and repo links.
 - **Theming**: you pick a color **family** (Steam or Original); visitors toggle **dark / light**.
@@ -37,7 +37,7 @@ detail modal on click. Built with Astro, hosted free on GitHub Pages.
 | Content | Astro Content Collections (1 Markdown file per project), Zod-validated |
 | Styling | Plain CSS + custom properties (no Tailwind) |
 | Images | `astro:assets` (`<Image>`, Sharp) |
-| Video | Self-hosted MP4 + WebM in `public/` (no Git LFS) |
+| Video | YouTube embed (`youtube:`), injected on demand; nothing committed (no Git LFS) |
 | Hosting | GitHub Pages via GitHub Actions |
 
 ---
@@ -94,8 +94,8 @@ Delete its `.md` file (and optionally its media folder). That's it.
 
 ### Reorder projects
 
-Set the `order` number in each project's frontmatter (lower = earlier). The **first**
-project in the current filter becomes the **featured hero**; the rest fill the grid.
+Set the `order` number in each project's frontmatter (lower = earlier). Cards appear in
+that order in the grid; ties break alphabetically by title.
 
 ### Project fields
 
@@ -103,18 +103,16 @@ project in the current filter becomes the **featured hero**; the rest fill the g
 ---
 title: "Trawler's Wake"           # required — card + modal title
 blurb: "PC horror fishing game"   # required — one line on the card
-summary: "Longer teaser…"         # optional — featured hero teaser (falls back to blurb)
+summary: "Longer teaser…"         # optional — lead line shown in the modal under the title
 category: "Game dev"              # required — MUST match a category in site.ts
 tags: ["Unity", "URP", "C#"]      # required — tech pills
 status: "Shipped"                 # optional — badge text
 statusTone: "green"               # optional — green | blue | neutral (default neutral)
+platform: "PC"                    # optional — PC | Mobile | VR (icon badge on the card)
 order: 1                          # optional — sort key, ascending (default 999)
-thumb: "…/thumb.jpg"              # required — grid capsule poster
-previewMp4: "/media/<id>/preview.mp4"   # optional — hover loop
-previewWebm: "/media/<id>/preview.webm" # optional
-fullMp4: "/media/<id>/full.mp4"         # optional — modal video
-fullWebm: "/media/<id>/full.webm"       # optional
-poster: "…/poster.jpg"            # optional — modal poster (falls back to thumb)
+orientation: "landscape"          # optional — "landscape" (default) or "portrait" (9:16)
+thumb: "…/banner.jpg"            # required — card capsule / initial image
+youtube: "https://youtu.be/ID"   # optional — YouTube URL or bare id; powers hover preview + modal
 links:                            # required — at least one
   - { label: "Source", href: "https://github.com/…", type: "github" }
   - { label: "View on Steam", href: "https://…", type: "steam" }
@@ -127,79 +125,42 @@ The Markdown body here becomes the full description shown in the modal.
 > `site.ts`), **the build fails with a clear error** instead of silently shipping a broken
 > card. That's intentional.
 
-A project with **no video fields** still works — the card shows the static thumbnail and
-the modal shows the poster image.
+A project with **no `youtube`** still works — the card shows the static image and the modal
+shows it as a still.
 
 ### Where assets go
 
-- **Videos** → `public/media/<id>/` (`preview.mp4`, `preview.webm`, `full.mp4`,
-  `full.webm`). Served as-is; referenced by path.
-- **Images** (thumbnails/posters) → `src/assets/media/<id>/` (`thumb.jpg`, `poster.jpg`),
-  so Astro's `<Image>` can optimize them. Reference them in frontmatter by a path relative
-  to the `.md` file, e.g. `thumb: "../../assets/media/<id>/thumb.jpg"`. (Images under
-  `public/` are *not* processed by `<Image>`; that's why sources live in `src/`.)
+- **Image** (the card/modal `thumb`) → `src/assets/media/<id>/` (e.g. a Steam
+  `banner.jpg`), so Astro's `<Image>` can optimize it. Reference it in frontmatter by a path
+  relative to the `.md` file, e.g. `thumb: "../../assets/media/<id>/banner.jpg"`. (Images
+  under `public/` are *not* processed by `<Image>`; that's why sources live in `src/`.)
+- **Video** is embedded from YouTube via the `youtube` field — nothing is committed.
 
-Both folders are named after the project `id` (the Markdown filename).
+The folder is named after the project `id` (the Markdown filename).
 
 ---
 
-## Media standard (recording & encoding)
+## Media standard
 
-Keep total media lean — aim for **under ~50 MB** across the whole site (GitHub Pages
-serves from the repo; there's no Git LFS and a soft 100 GB/month bandwidth limit). The two
-video roles have different budgets.
+**Video is YouTube.** Set `youtube` to a watch/share URL (or bare 11-char id) and the same
+video drives both roles:
 
-### Recording
+- **Card hover preview** — muted, looping, no controls (a silent loop). The iframe is
+  injected only when you hover and removed when you leave, so the page never loads a player
+  up front and only the hovered card ever plays.
+- **Modal** — opens muted with controls, so a visitor can unmute, seek, and go fullscreen.
+  The iframe is torn down on close, which stops playback and any audio immediately.
 
-- Capture at **1080p or higher**, **30 fps minimum** (60 fps for fast motion), then
-  downscale on encode.
-- Use a clean capture (OBS for games/desktop) with no debug overlays or watermarks.
-- For **hover loops**, pick a 4–8 s segment whose start and end match so it loops
-  seamlessly.
-- Frame the action — the most representative few seconds of the project.
+`prefers-reduced-motion` suppresses autoplay in both. This offloads all video bandwidth to
+YouTube — there are no media files in the repo and no size budget to manage.
 
-### Specs
+### Image
 
-| Asset | Resolution | Length | Format | Audio | Target size |
-|---|---|---|---|---|---|
-| **Hover preview** (`preview.*`) | 640×360 (16:9) | 4–8 s, loops | MP4 (H.264) + WebM (VP9) | none | ≤ ~1.5 MB |
-| **Modal video** (`full.*`) | 1280×720 max | 15–45 s | MP4 (H.264) + WebM (VP9) | none (or muted) | ≤ ~8 MB |
-| **Capsule thumbnail** (`thumb.jpg`) | 1280×720 source (16:9) | — | JPG/PNG/WebP | — | source ≤ ~400 KB |
-| **Modal poster** (`poster.jpg`) | 1280×720 | — | JPG/PNG/WebP | — | source ≤ ~400 KB |
-
-(`<Image>` re-optimizes thumbnails/posters automatically, so source size is a soft guide.)
-
-### Encoding (ffmpeg)
-
-Hover loop — MP4 and WebM, audio stripped:
-```bash
-ffmpeg -i input.mov -an -vf "scale=640:-2,fps=30" \
-  -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 28 -movflags +faststart \
-  preview.mp4
-
-ffmpeg -i input.mov -an -vf "scale=640:-2,fps=30" \
-  -c:v libvpx-vp9 -b:v 0 -crf 36 -row-mt 1 \
-  preview.webm
-```
-
-Modal video — MP4 and WebM:
-```bash
-ffmpeg -i input.mov -an -vf "scale=1280:-2,fps=30" \
-  -c:v libx264 -profile:v high -pix_fmt yuv420p -crf 26 -movflags +faststart \
-  full.mp4
-
-ffmpeg -i input.mov -an -vf "scale=1280:-2,fps=30" \
-  -c:v libvpx-vp9 -b:v 0 -crf 34 -row-mt 1 \
-  full.webm
-```
-
-Grab a poster frame from the video (e.g. 2 seconds in):
-```bash
-ffmpeg -ss 00:00:02 -i full.mp4 -frames:v 1 -vf "scale=1280:-2" poster.jpg
-```
-
-> Tip: if a file is still too big, raise the `-crf` value (higher = smaller/lower quality)
-> or shorten the clip. CRF ~28–32 is usually invisible for short loops.
+Each project needs one **`thumb`** image — the card capsule / initial frame, also the modal
+still when there's no `youtube`. A Steam **header/`banner.jpg`** works well. It goes in
+`src/assets/media/<id>/` so Astro's `<Image>` optimizes it (16:9 `cover`; ~460×215 Steam
+headers crop slightly, which is fine). For a portrait card set `orientation: "portrait"` —
+the image renders `contain` over a blurred backdrop instead of cropping.
 
 ---
 
@@ -278,10 +239,11 @@ Every push to `main` triggers a rebuild and redeploy — usually live within a m
   `site.ts`.
 - **Flash of the wrong color mode on load** → the inline no-flash script in the `<head>`
   must run before the stylesheet; don't move it into a deferred bundle.
-- **Hover preview doesn't play** → confirm `preview.mp4`/`preview.webm` exist at the path
-  in the frontmatter and that the files aren't tracked by Git LFS (Pages won't serve LFS).
-- **Site is large / slow** → re-encode videos at a higher `-crf` and check total media size
-  against the budget above.
+- **Hover preview doesn't play** → confirm `youtube` is a valid watch/share URL or 11-char
+  id, and that you're testing with a real pointer (hover preview is gated to `hover: hover`
+  / `pointer: fine`; on touch, a tap opens the modal instead).
+- **Video doesn't load** → check the id resolves on youtube.com and the video allows
+  embedding (some are owner-restricted).
 
 ---
 
@@ -293,7 +255,7 @@ src/
   content/projects/*.md       # one file per project
   content.config.ts           # schema (validates frontmatter)
   styles/themes.css           # the four palettes
-  components/                 # Header, FilterTabs, FeaturedHero, ProjectCard, modal…
+  components/                 # Header, FilterTabs, ProjectCard, ProjectGrid, modal…
   layouts/BaseLayout.astro
   pages/index.astro
 public/

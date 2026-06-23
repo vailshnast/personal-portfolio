@@ -4,26 +4,26 @@ import type { Project } from "../lib/projects";
 
 interface Props {
   projects: Project[];
-  // The currently-featured project; its card is hidden so it isn't duplicated
-  // (it appears in the hero instead). Filtering reassigns this client-side.
-  featuredId: string;
 }
 
-const { projects, featuredId } = Astro.props;
+const { projects } = Astro.props;
 ---
 
 <div class="grid">
-  {
-    projects.map((project) => (
-      <ProjectCard project={project} hidden={project.id === featuredId} />
-    ))
-  }
+  {projects.map((project) => <ProjectCard project={project} />)}
 </div>
 
 <style>
   .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(178px, 1fr));
-    gap: 14px;
+    /* Exactly two equal columns → wide cards, identical in size regardless of
+       count. Collapses to one column on narrow screens. */
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+  }
+  @media (max-width: 600px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

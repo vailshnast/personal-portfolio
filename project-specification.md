@@ -30,7 +30,7 @@ A single-page, static **developer portfolio** inspired by the Steam store. It le
 with projects (no hero bio, no endless scroll). Visitors see every project at a glance,
 preview videos on hover, and open a full detail **modal** on click.
 
-- **Featured hero** at the top + a **capsule grid** of the remaining projects.
+- A uniform **capsule grid** of all projects (no featured hero).
 - **Category filter tabs** (All / Game dev / Backend / Tooling …).
 - **Hover** → in-card video preview.
 - **Click** → in-page **modal overlay** with the full video, description, and repo links.
@@ -67,7 +67,7 @@ preview videos on hover, and open a full detail **modal** on click.
 | Owner config | `src/config/site.ts` (typed) |
 | Styling | **Plain CSS + custom properties** (no Tailwind) |
 | Images | `astro:assets` `<Image>` (Sharp) |
-| Video | Self-hosted MP4 (H.264) + WebM (VP9) in `public/`, **no Git LFS** |
+| Video | YouTube embed (`youtube:`), iframe injected on demand; nothing committed, **no Git LFS** |
 | Interactivity | Vanilla TS in `<script>` tags / minimal islands. No React/Vue. |
 | Formatting | Prettier + `prettier-plugin-astro` |
 | CI/CD | GitHub Actions (`withastro/action`) → GitHub Pages on push to `main` |
@@ -87,14 +87,9 @@ preview videos on hover, and open a full detail **modal** on click.
 ├── public/
 │   ├── .nojekyll                     # (the deploy action handles this, keep anyway)
 │   ├── cv.pdf                        # owner's CV (optional)
-│   └── media/
-│       └── <project-id>/
-│           ├── preview.mp4           # hover loop (muted)
-│           ├── preview.webm
-│           ├── full.mp4              # modal video (muted, looped)
-│           ├── full.webm
-│           ├── thumb.jpg             # grid capsule poster (source for <Image>)
-│           └── poster.jpg            # modal video poster
+│   ├── robots.txt                   # points crawlers at the sitemap
+│   └── favicon.svg
+│       # No video files — video is embedded from YouTube (see §9).
 ├── src/
 │   ├── config/
 │   │   └── site.ts                   # OWNER-FACING config (see §5)
@@ -102,8 +97,11 @@ preview videos on hover, and open a full detail **modal** on click.
 │   ├── content/
 │   │   └── projects/
 │   │       ├── trawlers-wake.md
-│   │       ├── finance-tracker-api.md
 │   │       └── …
+│   ├── assets/
+│   │   └── media/
+│   │       └── <project-id>/
+│   │           └── banner.jpg        # card / initial image (source for <Image>)
 │   ├── styles/
 │   │   ├── reset.css
 │   │   ├── themes.css                # all 4 palettes as CSS variables (see §7)
@@ -115,11 +113,11 @@ preview videos on hover, and open a full detail **modal** on click.
 │   │   ├── Header.astro
 │   │   ├── ThemeToggle.astro
 │   │   ├── FilterTabs.astro
-│   │   ├── FeaturedHero.astro
 │   │   ├── ProjectCard.astro
 │   │   ├── ProjectGrid.astro
 │   │   ├── ProjectModal.astro
-│   │   └── StatusBadge.astro
+│   │   ├── StatusBadge.astro
+│   │   └── PlatformBadge.astro
 │   ├── layouts/
 │   │   └── BaseLayout.astro
 │   └── pages/
@@ -187,24 +185,22 @@ Zod schema. **Confirm the exact current API via the Astro Docs MCP** before writ
 |---|---|---|---|
 | `title` | string | ✅ | Card + modal title |
 | `blurb` | string | ✅ | One line under the title on the card (≤ ~60 chars) |
-| `summary` | string | ➖ | Richer teaser shown on the featured hero. Falls back to `blurb`. |
+| `summary` | string | ➖ | Optional lead line shown in the modal, under the title. |
 | `category` | enum(site.categories) | ✅ | Drives filtering. Must match a configured category. |
 | `tags` | string[] | ✅ | Tech pills (cap display at ~4 on card, all in modal) |
 | `status` | string | ➖ | Badge text, e.g. "Shipped", "Live demo", "Production" |
 | `statusTone` | enum('green','blue','neutral') | ➖ | Badge color intent. Default 'neutral'. |
+| `platform` | enum('PC','Mobile','VR') | ➖ | Target platform; shown as an icon badge (top-left of the card, in the modal head). |
 | `order` | number | ➖ | Sort key, ascending. Lower = earlier. Default 999. |
-| `thumb` | image | ✅ | Grid capsule poster (use `image()` helper for `astro:assets`) |
-| `previewMp4` | string | ➖ | Path under `/media/<id>/`. Hover loop. |
-| `previewWebm` | string | ➖ | WebM sibling. |
-| `fullMp4` | string | ➖ | Modal video. |
-| `fullWebm` | string | ➖ | WebM sibling. |
-| `poster` | image | ➖ | Modal video poster. Falls back to `thumb`. |
+| `orientation` | enum('landscape','portrait') | ➖ | Media aspect. `portrait` (9:16) is letterboxed over a blurred backdrop instead of cropped. Default 'landscape'. |
+| `thumb` | image | ✅ | Card capsule / initial image (use `image()` helper for `astro:assets`). A Steam `banner.jpg` works well. |
+| `youtube` | string | ➖ | YouTube watch/share URL or bare 11-char id. Powers **both** the hover preview and the modal (iframe injected on hover/open, torn down on leave/close). This is the **only** video mechanism — there is no self-hosted `<video>`. |
 | `links` | array | ✅ | `{ label, href, type: 'github'|'gitlab'|'steam'|'itch'|'demo'|'external' }` |
 
 - The **long description** is the Markdown **body** of the file (rendered into the modal).
 - `id` (used for the media folder and modal targeting) = the file slug.
-- If a project has no video fields, the card shows only the static `thumb` (no hover
-  preview), and the modal shows the poster image. The site must not break.
+- If a project has no `youtube`, the card shows only the static `thumb` (no hover preview),
+  and the modal shows that image as a still. The site must not break.
 
 ### Example — `src/content/projects/trawlers-wake.md`
 
@@ -218,12 +214,8 @@ tags: ["Unity", "URP", "C#", "Steam"]
 status: "Shipped"
 statusTone: "green"
 order: 1
-thumb: "../../public/media/trawlers-wake/thumb.jpg"
-previewMp4: "/media/trawlers-wake/preview.mp4"
-previewWebm: "/media/trawlers-wake/preview.webm"
-fullMp4: "/media/trawlers-wake/full.mp4"
-fullWebm: "/media/trawlers-wake/full.webm"
-poster: "../../public/media/trawlers-wake/poster.jpg"
+thumb: "../../assets/media/trawlers-wake/banner.jpg"
+youtube: "https://www.youtube.com/watch?v=oMGCQ8i6BRc"
 links:
   - { label: "View on Steam", href: "https://store.steampowered.com/…", type: "steam" }
   - { label: "Source", href: "https://github.com/vailshnast/…", type: "github" }
@@ -235,11 +227,10 @@ prefab automation pipeline that cut content iteration time substantially.
 ```
 
 > **Image path note:** `astro:assets` `image()` schema fields resolve relative to the
-> file. If thumbnails live under `public/`, they are *not* processed by `<Image>`.
-> **Decision:** put thumbnail/poster **source images in `src/assets/media/<id>/`** so
-> `<Image>` can optimize them, and keep **videos in `public/media/<id>/`** (videos are
-> served as-is, not processed). Update the schema/paths accordingly and document the
-> final convention in README §"Managing projects". Pick one convention and be consistent.
+> file. If images live under `public/`, they are *not* processed by `<Image>`.
+> **Decision:** put the **`thumb` source image in `src/assets/media/<id>/`** (e.g.
+> `banner.jpg`) so `<Image>` can optimize it. There are no committed videos — video is
+> embedded from YouTube via the `youtube` field (see §9).
 
 ---
 
@@ -385,60 +376,68 @@ the active category and re-renders the hero + grid (client-side; no page reload)
 ### Filtering + Featured rule (important)
 - Build the ordered list = all projects sorted by `order` asc, then `title`.
 - For the active category (`All` = no filter): `filtered = ordered.filter(matches)`.
-- **Hero = `filtered[0]`**; **grid = `filtered.slice(1)`**.
-- `filtered.length === 1` → hero only, no grid. `=== 0` → empty state message.
-- All projects are rendered server-side; filtering toggles visibility via a `data-category`
-  attribute + a small client script. Do **not** require JS to *see* projects — default
-  (All) state must be fully visible without JS; JS only enhances filtering/hero-recompute.
-  (If recomputing the hero on filter purely client-side is complex, an acceptable
-  simplification: keep a fixed hero = first project overall, and the grid filters. Choose
-  the approach that keeps the no-JS fallback coherent and document which you picked.)
-
-### FeaturedHero.astro
-Large capsule. Image/poster with `--scrim`; over it: `FEATURED` label, title, description
-excerpt, tags, and a primary action button (uses `--action-bg`). Plays its preview video
-on hover (desktop). Click → opens its modal. Subtle `--border-strong` frame.
+- **Grid = `filtered`** (no hero); `filtered.length === 0` → empty state message.
+- All projects are rendered server-side; filtering toggles card visibility via a
+  `data-category` attribute + a small client script. Do **not** require JS to *see*
+  projects — the default (All) state must be fully visible without JS; JS only enhances
+  filtering.
 
 ### ProjectGrid.astro / ProjectCard.astro
 Responsive grid: `repeat(auto-fit, minmax(178px, 1fr))`, gap ~14px. Card = poster image
 (via `<Image>`), status badge (top-right), then title + blurb + tags. Squared corners
 (`--radius`). On hover: scale ~1.04, `box-shadow: 0 0 0 1px var(--hover-ring), var(--ring-glow) color`,
-swap poster → playing `<video>` preview, raise `z-index`. Click → modal.
+fade in a YouTube preview iframe (injected on `mouseenter`, removed on `mouseleave`), raise
+`z-index`. Click → modal.
 
 
 ### ProjectModal.astro  (in-page overlay — NOT a route)
 One modal instance reused for all projects, populated on open from the clicked card's
-data (or per-project hidden templates). Contains: looped **muted** `<video>` (with
-`controls`, `poster`, MP4+WebM sources) or the poster fallback, title, status/meta line,
-rendered Markdown description, full tag list, and the `links` as buttons (icon per `type`).
-Behavior:
-- Open on card/hero click; close on ✕, backdrop click, and `Esc`.
+data (or per-project hidden templates). Contains: a **YouTube embed** (iframe injected on
+open with `controls`, muted autoplay) or the static `thumb` fallback, title, status/meta
+line, rendered Markdown description, full tag list, and the `links` as buttons (icon per
+`type`). Behavior:
+- Open on card click; close on ✕, backdrop click, and `Esc`.
 - **Focus trap** while open; return focus to the triggering card on close.
 - Lock body scroll while open (`overflow: hidden` on `<html>`).
-- Pause/reset the modal video on close. Start muted; respect reduced-motion (no autoplay).
+- Remove the iframe on close (stops playback + audio). Open muted; respect reduced-motion
+  (no autoplay).
 - Implemented as an absolutely/normally-positioned overlay within the page (no `position: fixed`
   pitfalls; ensure it covers the viewport correctly and is scrollable if content is tall).
 
 ### StatusBadge.astro
 Maps `statusTone` → badge tokens (`green` / `blue` / `neutral`). Renders `status` text.
 
+### PlatformBadge.astro
+Renders the `platform` (`PC` / `Mobile` / `VR`) as a compact **icon-only** square badge
+(uniform 32px; name exposed via `aria-label` / `title`). Shown top-left of the card and in
+the modal head. Uses `--accent` / `--accent-contrast`.
+
 ---
 
 ## 9. Media handling (integration)
 
-- **Hover preview** (`ProjectCard` / `FeaturedHero`): `<video muted loop playsinline
-  preload="none">` with MP4 + WebM `<source>`s, `poster` = thumb. `play()` on `mouseenter`,
-  `pause()` + reset on `mouseleave`. Never autoplay on load. Never play more than the
-  hovered one.
-- **Modal video**: same element type, `controls` enabled, `preload="metadata"`,
-  starts when modal opens (muted), pauses on close.
-- **Posters/thumbnails**: `<Image>` from `astro:assets` for responsive WebP. Always set
-  meaningful `alt`.
-- **Reduced motion**: if `prefers-reduced-motion: reduce`, skip all video autoplay and
-  hover scaling; show poster images only.
-- The **recording + encoding standard** (resolutions, length, bitrate, file-size caps,
-  ffmpeg commands) lives in **README**. Cards/modals must degrade gracefully when video
-  fields are absent.
+Video is **YouTube only**; the `youtube` field (URL or bare id, parsed by `lib/projects.ts`
+`youtubeId`) drives both roles. Use `youtube-nocookie.com/embed/…`.
+
+- **Hover preview** (`ProjectCard`): on `mouseenter`, inject an iframe with
+  `autoplay&mute=1&loop=1&playlist=<id>&controls=0` (a silent loop); on `mouseleave`, remove
+  it (stops playback, frees network). The facade `<div>` is `pointer-events:none` so the
+  card's open button still receives the click. Never load a player on page load; never run
+  more than the hovered one.
+- **Modal**: on open, inject an iframe with `autoplay&mute=1&controls=1` (visitor can
+  unmute / fullscreen); on close, remove it. The iframe joins the focus trap.
+- **Image**: `thumb` via `<Image>` from `astro:assets` for responsive WebP; always set
+  meaningful `alt`. Shown as the card's resting state and the modal still when no `youtube`.
+- **Reduced motion**: if `prefers-reduced-motion: reduce`, skip autoplay (hover and modal)
+  and hover scaling; show the image only.
+- Cards/modals must degrade gracefully when `youtube` is absent (static image, no preview).
+- **Inline "About" clips** (optional): short silent loops embedded inside the modal
+  description. Files live in `public/media/<id>/about/` (`clipN.webm` + `clipN.mp4` +
+  `clipN.poster.avif`); the Markdown body holds base-relative placeholders
+  (`<div class="about-clip" data-about-clip="media/<id>/about/clipN">`). The modal script
+  injects an `autoplay muted loop` `<video>` (poster image only under reduced motion) on open
+  and removes it on close, resolving paths through `BASE_URL`. These are the only committed
+  video files.
 
 ---
 
@@ -525,7 +524,7 @@ jobs:
 - [ ] Click opens the modal with the full video + description + working repo links;
       Esc/backdrop/✕ close it; focus is managed.
 - [ ] Touch devices: no hover dependency; tap opens the modal.
-- [ ] Filter tabs filter the grid and recompute the hero (or the documented fallback).
+- [ ] Filter tabs filter the grid (default "All" shows everything).
 - [ ] Projects are visible with JavaScript disabled (default "All" view).
 - [ ] Builds and deploys to GitHub Pages via the Actions workflow; assets resolve under `base`.
 
@@ -537,7 +536,7 @@ jobs:
 2. `site.ts` config + `BaseLayout` + `themes.css` (all 4 palettes) + no-flash script + `ThemeToggle`. Verify theming/toggle before content.
 3. Content Collection schema + 2–3 sample projects (with placeholder media).
 4. `ProjectCard` + `ProjectGrid` (static, no JS) → projects visible.
-5. `FeaturedHero` + filtering logic + `FilterTabs`.
+5. Filtering logic + `FilterTabs`.
 6. Hover preview video (desktop only; touch falls back to tap-opens-modal).
 7. `ProjectModal` (focus trap, scroll lock, video control).
 8. Accessibility + reduced-motion pass; Lighthouse.

@@ -1,16 +1,14 @@
 ---
 import { render } from "astro:content";
 import StatusBadge from "./StatusBadge.astro";
-import type { Project } from "../lib/projects";
+import PlatformBadge from "./PlatformBadge.astro";
+import { youtubeId, type Project } from "../lib/projects";
 
 interface Props {
   projects: Project[];
 }
 
 const { projects } = Astro.props;
-
-const base = import.meta.env.BASE_URL.replace(/\/$/, "");
-const withBase = (p: string) => (p.startsWith("/") ? `${base}${p}` : p);
 
 // Pre-render each project's Markdown body once; one hidden panel per project is
 // reused as the modal content (spec-sanctioned "per-project hidden templates").
@@ -37,8 +35,12 @@ const panels = await Promise.all(
       {
         panels.map(({ project, Content }) => {
           const d = project.data;
-          const hasVideo = Boolean(d.fullMp4 || d.fullWebm);
-          const posterSrc = (d.poster ?? d.thumb).src;
+          const ytId = youtubeId(d.youtube);
+          const posterSrc = d.thumb.src;
+          const isPortrait = d.orientation === "portrait";
+          const mediaBg = isPortrait
+            ? `--media-bg: url(${posterSrc})`
+            : undefined;
           return (
             <section
               class="panel"
@@ -46,25 +48,22 @@ const panels = await Promise.all(
               data-project-id={project.id}
               hidden
             >
-              <div class="panel__media">
-                {hasVideo ? (
-                  <video
-                    class="panel__video"
-                    data-modal-video
-                    controls
-                    muted
-                    loop
-                    playsinline
-                    preload="none"
-                    poster={posterSrc}
-                  >
-                    {d.fullMp4 && (
-                      <source src={withBase(d.fullMp4)} type="video/mp4" />
-                    )}
-                    {d.fullWebm && (
-                      <source src={withBase(d.fullWebm)} type="video/webm" />
-                    )}
-                  </video>
+              <div
+                class:list={[
+                  "panel__media",
+                  { "panel__media--portrait": isPortrait },
+                ]}
+                style={mediaBg}
+              >
+                {ytId ? (
+                  /* Iframe injected on open (see script) so a closed modal
+                     never loads a YouTube player. */
+                  <div
+                    class="panel__yt"
+                    data-modal-yt
+                    data-yt-id={ytId}
+                    data-yt-title={d.title}
+                  />
                 ) : (
                   <img
                     class="panel__poster"
@@ -78,9 +77,26 @@ const panels = await Promise.all(
                 <h2 class="panel__title" id={`modal-title-${project.id}`}>
                   {d.title}
                 </h2>
+                <PlatformBadge platform={d.platform} />
                 <StatusBadge status={d.status} tone={d.statusTone} />
+                {d.links.length > 0 && (
+                  <div class="panel__head-actions">
+                    {d.links.map((link) => (
+                      <a
+                        class="panel__link panel__head-cta"
+                        href={link.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-link-type={link.type}
+                      >
+                        {link.label}
+                      </a>
+                    ))}
+                  </div>
+                )}
               </div>
               <p class="panel__meta">{d.category}</p>
+              {d.summary && <p class="panel__lead">{d.summary}</p>}
 
               <div class="prose">
                 <Content />
@@ -91,20 +107,6 @@ const panels = await Promise.all(
                   <li class="tag">{tag}</li>
                 ))}
               </ul>
-
-              <div class="panel__links">
-                {d.links.map((link) => (
-                  <a
-                    class="panel__link"
-                    href={link.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    data-link-type={link.type}
-                  >
-                    {link.label}
-                  </a>
-                ))}
-              </div>
             </section>
           );
         })
@@ -132,7 +134,7 @@ const panels = await Promise.all(
     function focusable(): HTMLElement[] {
       return Array.from(
         dialog.querySelectorAll<HTMLElement>(
-          'a[href], button:not([disabled]), video[controls], [tabindex]:not([tabindex="-1"])',
+          'a[href], button:not([disabled]), video[controls], iframe, [tabindex]:not([tabindex="-1"])',
         ),
       ).filter((el) => el.offsetParent !== null);
     }
@@ -148,25 +150,85 @@ const panels = await Promise.all(
       modal!.hidden = false;
       document.documentElement.style.overflow = "hidden";
 
-      const video = panel.querySelector<HTMLVideoElement>(
-        "video[data-modal-video]",
-      );
-      if (video && !reduce) {
-        video.currentTime = 0;
-        void video.play().catch(() => {});
+      const yt = panel.querySelector<HTMLElement>("[data-modal-yt]");
+      if (yt) {
+        const id = yt.dataset.ytId!;
+        // Muted autoplay (so it starts despite browser policy); controls let
+        // the visitor unmute/seek/fullscreen. Reduced motion → no autoplay.
+        const frame = document.createElement("iframe");
+        frame.src =
+          `https://www.youtube-nocookie.com/embed/${id}` +
+          `?autoplay=${reduce ? 0 : 1}&mute=1&controls=1` +
+          `&modestbranding=1&playsinline=1&rel=0`;
+        frame.allow =
+          "autoplay; encrypted-media; picture-in-picture; fullscreen";
+        frame.allowFullscreen = true;
+        frame.title = `${yt.dataset.ytTitle ?? "Project"} video`;
+        yt.replaceChildren(frame);
       }
+
+      // Inline "About" clips: lightweight looping <video> injected into their
+      // placeholders (a static poster image only, under reduced motion). Paths
+      // go through BASE_URL so they resolve under the GitHub Pages subpath.
+      const base = import.meta.env.BASE_URL.replace(/\/$/, "");
+      panel
+        .querySelectorAll<HTMLElement>("[data-about-clip]")
+        .forEach((slot) => {
+          if (slot.firstElementChild) return;
+          const path = `${base}/${slot.dataset.aboutClip}`;
+          if (reduce) {
+            const img = document.createElement("img");
+            img.src = `${path}.poster.avif`;
+            img.alt = "";
+            img.addEventListener("load", () => {
+              if (img.naturalWidth)
+                slot.style.setProperty(
+                  "--clip-ar",
+                  `${img.naturalWidth} / ${img.naturalHeight}`,
+                );
+            });
+            slot.appendChild(img);
+            return;
+          }
+          const v = document.createElement("video");
+          v.muted = true;
+          v.loop = true;
+          v.autoplay = true;
+          v.playsInline = true;
+          v.preload = "none";
+          v.poster = `${path}.poster.avif`;
+          v.addEventListener("loadedmetadata", () => {
+            if (v.videoWidth)
+              slot.style.setProperty(
+                "--clip-ar",
+                `${v.videoWidth} / ${v.videoHeight}`,
+              );
+          });
+          for (const [ext, type] of [
+            ["webm", "video/webm"],
+            ["mp4", "video/mp4"],
+          ] as const) {
+            const s = document.createElement("source");
+            s.src = `${path}.${ext}`;
+            s.type = type;
+            v.appendChild(s);
+          }
+          slot.appendChild(v);
+          void v.play().catch(() => {});
+        });
+
       closeBtn.focus();
     }
 
     function close() {
       if (modal!.hidden) return;
-      const video = activePanel()?.querySelector<HTMLVideoElement>(
-        "video[data-modal-video]",
-      );
-      if (video) {
-        video.pause();
-        video.currentTime = 0;
-      }
+      const panel = activePanel();
+      // Removing the iframe stops playback (and any audio) immediately.
+      panel?.querySelector<HTMLElement>("[data-modal-yt]")?.replaceChildren();
+      // Tear down inline About clips so they stop looping once the modal closes.
+      panel
+        ?.querySelectorAll<HTMLElement>("[data-about-clip]")
+        .forEach((slot) => slot.replaceChildren());
       modal!.hidden = true;
       document.documentElement.style.overflow = "";
       panels.forEach((p) => {
@@ -237,40 +299,89 @@ const panels = await Promise.all(
   }
   .modal__scroll {
     overflow-y: auto;
+    /* Reserve the scrollbar's space so it never overlaps the media/content. */
+    scrollbar-gutter: stable;
     padding: clamp(1rem, 3vw, 1.75rem);
   }
+  /* Floating close button: a solid circular control that sits clearly above the
+     video and clear of the scrollbar gutter (right offset > the reserved gutter). */
   .modal__close {
     position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    z-index: 2;
-    width: 2rem;
-    height: 2rem;
+    top: 0.75rem;
+    right: 1rem;
+    z-index: 5;
+    width: 2.25rem;
+    height: 2.25rem;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border: 1px solid var(--border-strong);
-    border-radius: var(--radius);
+    border-radius: 50%;
     background: var(--bg-surface-2);
     color: var(--text-primary);
     cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
   }
   .modal__close:hover {
     border-color: var(--accent);
   }
 
   .panel__media {
+    position: relative;
     aspect-ratio: 16 / 9;
     border-radius: var(--radius);
     overflow: hidden;
     background: var(--bg-surface-2);
     margin-bottom: 1rem;
   }
-  .panel__video,
   .panel__poster {
     width: 100%;
     height: 100%;
     object-fit: cover;
+  }
+  /* Inline "About" clips embedded in the rendered Markdown description.
+     800×350 source; let it scale to the prose width without layout shift. */
+  .prose :global(.about-clip) {
+    margin: 1rem 0;
+    /* Default reserves space; the script sets --clip-ar to the media's real
+       ratio once it loads, so different clips never get cropped or distorted. */
+    aspect-ratio: var(--clip-ar, 16 / 9);
+    background: var(--bg-surface-2);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .prose :global(.about-clip > video),
+  .prose :global(.about-clip > img) {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .panel__yt {
+    position: absolute;
+    inset: 0;
+  }
+  .panel__yt :global(iframe) {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+
+  /* Portrait: contain over a blurred backdrop of the poster. */
+  .panel__media--portrait::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: var(--media-bg) center / cover no-repeat;
+    filter: blur(28px) brightness(0.55);
+    transform: scale(1.25);
+  }
+  .panel__media--portrait .panel__poster {
+    position: relative;
+    object-fit: contain;
+    z-index: 1;
   }
 
   .panel__head {
@@ -279,15 +390,34 @@ const panels = await Promise.all(
     gap: 0.75rem;
     flex-wrap: wrap;
   }
+  /* Action links promoted into the head, grouped and pushed to the right after
+     the badges so e.g. "View on GitHub" and "View Docs" sit side by side. */
+  .panel__head-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+  .panel__head-cta {
+    flex: none;
+    padding: 0.4rem 0.85rem;
+    font-size: 0.82rem;
+  }
   .panel__title {
     font-size: clamp(1.3rem, 3vw, 1.8rem);
     font-weight: 700;
     color: var(--text-primary);
   }
   .panel__meta {
-    margin: 0.2rem 0 1rem;
+    margin: 0.2rem 0 0.75rem;
     font-size: 0.85rem;
     color: var(--text-muted);
+  }
+  .panel__lead {
+    margin: 0 0 1rem;
+    font-size: 1.02rem;
+    line-height: 1.5;
+    color: var(--text-secondary);
   }
 
   .panel__tags {
@@ -299,11 +429,6 @@ const panels = await Promise.all(
     margin: 1.1rem 0;
   }
 
-  .panel__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
   .panel__link {
     padding: 0.5rem 1rem;
     font-size: 0.88rem;

@@ -4,7 +4,7 @@ export type ThemeMode = "dark" | "light";
 export interface HeaderLink {
   label: string;
   href: string;
-  icon: "github" | "gitlab" | "cv" | "mail" | "external";
+  icon: "github" | "gitlab" | "linkedin" | "cv" | "mail" | "external";
 }
 
 export interface SiteConfig {
@@ -26,12 +26,21 @@ export const site: SiteConfig = {
   role: "Unity / C# & .NET developer",
   links: [
     { label: "GitHub", href: "https://github.com/vailshnast", icon: "github" },
-    { label: "GitLab", href: "https://gitlab.com/", icon: "gitlab" },
-    { label: "CV", href: "/cv.pdf", icon: "cv" },
+    { label: "GitLab", href: "https://gitlab.com/vailshnast", icon: "gitlab" },
+    {
+      label: "LinkedIn",
+      href: "https://www.linkedin.com/in/valentyn-matveenko/",
+      icon: "linkedin",
+    },
+    {
+      label: "CV",
+      href: "https://drive.google.com/file/d/1hRfAXKx1hQl6fu8ad-rX3NL3UCv1fmx3/view?usp=drivesdk",
+      icon: "cv",
+    },
   ],
   themeFamily: "steam",
   defaultMode: "dark",
-  categories: ["Game dev", "Backend", "Tooling"],
+  categories: ["Games", ".NET"],
   metaTitle: "Valentyn Matvieienko — Portfolio",
   metaDescription: "Selected Unity/C# and .NET projects.",
   themeColor: "#1b2838", // steam / dark --bg-page

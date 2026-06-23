@@ -24,16 +24,11 @@ const categories = [ALL_CATEGORY, ...site.categories];
 </div>
 
 <script>
-  // Client-side category filter with hero recompute. Every project is rendered
-  // once as a [data-project-hero] (all but the active one hidden) and once as a
-  // [data-project-card] (the featured one hidden). Selecting a category shows the
-  // first matching project as the hero and the rest as cards. The server already
-  // renders the correct "All" state, so projects are visible without this script.
+  // Client-side category filter. The server renders every project as a
+  // [data-project-card]; selecting a category just shows the matching ones. The
+  // "All" state is the default server render, so projects are visible with no JS.
   const tabs = Array.from(
     document.querySelectorAll<HTMLButtonElement>("[data-filter-tab]"),
-  );
-  const heroes = Array.from(
-    document.querySelectorAll<HTMLElement>("[data-project-hero]"),
   );
   const cards = Array.from(
     document.querySelectorAll<HTMLElement>("[data-project-card]"),
@@ -46,25 +41,14 @@ const categories = [ALL_CATEGORY, ...site.categories];
     category === "All" || el.dataset.category === category;
 
   function apply(category: string) {
-    // Heroes and cards are rendered in canonical sort order, so the first
-    // matching hero is the correct featured project for this category.
-    const featured =
-      category === "All" ? heroes[0] : heroes.find((h) => matches(h, category));
-    const featuredId = featured?.dataset.projectId ?? null;
-
-    heroes.forEach((hero) => {
-      hero.hidden = hero.dataset.projectId !== featuredId;
-    });
-
     let visibleCards = 0;
     cards.forEach((card) => {
-      const show =
-        matches(card, category) && card.dataset.projectId !== featuredId;
+      const show = matches(card, category);
       card.hidden = !show;
       if (show) visibleCards += 1;
     });
 
-    if (emptyState) emptyState.hidden = featuredId !== null || visibleCards > 0;
+    if (emptyState) emptyState.hidden = visibleCards > 0;
   }
 
   function select(tab: HTMLButtonElement) {

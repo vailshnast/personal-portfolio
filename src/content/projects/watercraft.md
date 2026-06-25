@@ -1,11 +1,11 @@
 ---
 title: "WaterCraft"
 blurb: "Unity boat game on the Entitas ECS framework"
-category: "PC"
+category: "Mobile"
 tags: ["Unity", "C#", "Entitas", "ECS", "URP"]
 status: "Open Source"
 statusTone: "blue"
-platform: "PC"
+platform: "Mobile"
 order: 2
 thumb: "../../assets/media/watercraft/banner.jpg"
 youtube: "https://youtu.be/pDEecBeLHmA"

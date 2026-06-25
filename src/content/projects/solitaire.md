@@ -25,12 +25,3 @@ to dig out the cards you need — all against a running timer and score.
 A compact C# hobby project — the full solitaire rule set (foundations, tableau, stock and
 waste), drag-and-drop card handling with legal-move validation, auto-complete, and timed,
 move-penalised scoring, all wired up in the Unity engine and tuned for one-thumb mobile play.
-
-## Tech
-
-| | |
-|---|---|
-| **Engine** | Unity |
-| **Language** | C# |
-| **Genre** | Klondike solitaire / card game |
-| **Platform** | Mobile |
